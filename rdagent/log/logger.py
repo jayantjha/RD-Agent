@@ -100,7 +100,7 @@ class RDAgentLog(SingletonBaseClass):
                 raise ValueError("Thread ID is not set.")
 
             message = self.project_client.agents.create_message(
-                thread_id=RD_AGENT_SETTINGS.thread_id
+                thread_id=RD_AGENT_SETTINGS.thread_id,
                 role="assistant",
                 content=message_content,
             )

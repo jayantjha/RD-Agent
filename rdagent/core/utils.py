@@ -15,7 +15,6 @@ from filelock import FileLock
 from fuzzywuzzy import fuzz  # type: ignore[import-untyped]
 
 from rdagent.core.conf import RD_AGENT_SETTINGS
-from rdagent.log import rdagent_logger as logger
 from rdagent.oai.llm_conf import LLM_SETTINGS
 
 from azure.ai.projects import AIProjectClient
@@ -221,7 +220,7 @@ def get_manual_approval(message_content: str) -> bool:
     Get manual approval from the user for the given message.
     """
     connection_string = RD_AGENT_SETTINGS.agent_connection_string
-    control_thread_id = RD_AGENT_SETTINGS.control_thread_id
+    control_thread_id = RD_AGENT_SETTINGS.thread_id
 
     if not connection_string or not control_thread_id:
         return True
@@ -229,7 +228,7 @@ def get_manual_approval(message_content: str) -> bool:
     try:
         credential = DefaultAzureCredential()
         request_id = str(uuid.uuid4()) 
-        payload = json.dumps({"requestId": request_id, "message": message_content})
+        payload = json.dumps({"type": "approval", "requestId": request_id, "message": message_content})
         
         with AIProjectClient.from_connection_string(
                     credential=credential,
@@ -238,7 +237,7 @@ def get_manual_approval(message_content: str) -> bool:
             
             message = project_client.agents.create_message(
                 thread_id=control_thread_id, 
-                role="user", 
+                role="assistant", 
                 content=payload)
             
             while (1): 
@@ -250,11 +249,9 @@ def get_manual_approval(message_content: str) -> bool:
 
                 try:
                     response = json.loads(last_message.text.value)
-                    if response.get("requestId") == request_id:  # Ensure the requestId matches
-                        return response.get("approval", False)  # Return the "approval" field (True/False)
+                    if response.get("type") == "approval" and response.get("requestId") == request_id: 
+                        return response.get("approval", False)
                 except json.JSONDecodeError:
-                    logger.warning("Failed to parse the response message as JSON.")
                     continue
     except Exception as e:
-        logger.warning(f"Error in getting manual approval: {e}")
         return True

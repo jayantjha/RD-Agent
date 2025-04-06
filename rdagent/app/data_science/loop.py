@@ -35,6 +35,8 @@ class DataScienceRDLoop(RDLoop):
 
     def __init__(self, PROP_SETTING: BasePropSetting):
         logger.log_object(PROP_SETTING.competition, tag="competition")
+        logger.info(msg="DataScienceRDLoop is initialized", publish=True)
+        
         scen: Scenario = import_class(PROP_SETTING.scen)(PROP_SETTING.competition)
 
         ### shared components in the workflow  # TODO: check if

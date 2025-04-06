@@ -83,6 +83,5 @@ class RDAgentSettings(ExtendedBaseSettings):
     stdout_line_len: int = 10000
     agent_connection_string: str = Field("", env="AGENT_CONNECTION_STRING")
     thread_id: str = Field("", env="THREAD_ID")
-    control_thread_id: str = Field("", env="CONTROL_THREAD_ID")
 
 RD_AGENT_SETTINGS = RDAgentSettings()
