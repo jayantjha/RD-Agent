@@ -6,6 +6,7 @@ import json
 import multiprocessing as mp
 import pickle
 import random
+import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, ClassVar, NoReturn, cast
@@ -14,7 +15,13 @@ from filelock import FileLock
 from fuzzywuzzy import fuzz  # type: ignore[import-untyped]
 
 from rdagent.core.conf import RD_AGENT_SETTINGS
+from rdagent.log import rdagent_logger as logger
 from rdagent.oai.llm_conf import LLM_SETTINGS
+
+from azure.ai.projects import AIProjectClient
+from azure.identity import DefaultAzureCredential
+import uuid
+import json
 
 
 class RDAgentException(Exception):  # noqa: N818
@@ -208,3 +215,46 @@ def cache_with_pickle(hash_func: Callable, post_process_func: Callable | None = 
         return cache_wrapper
 
     return cache_decorator
+
+def get_manual_approval(message_content: str) -> bool:
+    """
+    Get manual approval from the user for the given message.
+    """
+    connection_string = RD_AGENT_SETTINGS.agent_connection_string
+    control_thread_id = RD_AGENT_SETTINGS.control_thread_id
+
+    if not connection_string or not control_thread_id:
+        return True
+
+    try:
+        credential = DefaultAzureCredential()
+        request_id = str(uuid.uuid4()) 
+        payload = json.dumps({"requestId": request_id, "message": message_content})
+        
+        with AIProjectClient.from_connection_string(
+                    credential=credential,
+                    conn_str=connection_string,
+                ) as project_client:
+            
+            message = project_client.agents.create_message(
+                thread_id=control_thread_id, 
+                role="user", 
+                content=payload)
+            
+            while (1): 
+                time.sleep(10)
+                messages = project_client.agents.list_messages(thread_id=control_thread_id)
+                last_message = messages.get_last_text_message_by_role(role="user") 
+                if last_message is None or last_message.text is None or last_message.text.value is None:
+                    continue
+
+                try:
+                    response = json.loads(last_message.text.value)
+                    if response.get("requestId") == request_id:  # Ensure the requestId matches
+                        return response.get("approval", False)  # Return the "approval" field (True/False)
+                except json.JSONDecodeError:
+                    logger.warning("Failed to parse the response message as JSON.")
+                    continue
+    except Exception as e:
+        logger.warning(f"Error in getting manual approval: {e}")
+        return True

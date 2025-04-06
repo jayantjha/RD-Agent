@@ -24,6 +24,10 @@ from rdagent.core.utils import SingletonBaseClass
 from .storage import FileStorage
 from .utils import LogColors, get_caller_info
 
+from azure.ai.projects import AIProjectClient
+from azure.identity import DefaultAzureCredential
+
+
 
 class RDAgentLog(SingletonBaseClass):
     """
@@ -69,6 +73,46 @@ class RDAgentLog(SingletonBaseClass):
         self.storage = FileStorage(self.log_trace_path)
 
         self.main_pid = os.getpid()
+
+        # Initialize project client and thread
+        try:
+            connection_string = RD_AGENT_SETTINGS.agent_connection_string
+            if not connection_string:
+                raise ValueError("Agent connection string is not set in RD_AGENT_SETTINGS.")
+
+            self.project_client = AIProjectClient.from_connection_string(
+                credential=DefaultAzureCredential(),
+                conn_str=connection_string,
+            )
+        except Exception as e:
+            pass
+
+    def publish_to_thread(self, message_content: str) -> None:
+        """
+        Sends a message to the thread associated with this logger.
+
+        :param message_content: The content of the message to send.
+        """
+        try:
+            if not self.project_client:
+                raise ValueError("AIProjectClient is not initialized.")
+            if not RD_AGENT_SETTINGS.thread_id:
+                raise ValueError("Thread ID is not set.")
+
+            message = self.project_client.agents.create_message(
+                thread_id=RD_AGENT_SETTINGS.thread_id
+                role="assistant",
+                content=message_content,
+            )
+
+            if not message:
+                raise ValueError(f"Failed to pass message to thread {self.thread.id}.")
+
+            self.info(f"Message successfully sent to thread {self.thread.id}.")
+        except Exception as e:
+            # Log the exception object
+            self.info(e, tag="send_message_to_thread_error")
+
 
     def set_trace_path(self, log_trace_path: str | Path) -> None:
         self.log_trace_path = Path(log_trace_path)
@@ -138,7 +182,7 @@ class RDAgentLog(SingletonBaseClass):
         logger.patch(lambda r: r.update(caller_info)).info(f"Logging object in {Path(logp).absolute()}")
         logger.remove(file_handler_id)
 
-    def info(self, msg: str, *, tag: str = "", raw: bool = False) -> None:
+    def info(self, msg: str, *, tag: str = "", raw: bool = False, publish: bool = False) -> None:
         # TODO: too much duplicated. due to we have no logger with stream context;
         caller_info = get_caller_info()
         if raw:
@@ -155,11 +199,14 @@ class RDAgentLog(SingletonBaseClass):
         logger.patch(lambda r: r.update(caller_info)).info(msg)
         logger.remove(file_handler_id)
 
+        if publish:
+            self.publish_to_thread(msg)
+
         if raw:
             logger.remove()
             logger.add(sys.stderr)
 
-    def warning(self, msg: str, *, tag: str = "") -> None:
+    def warning(self, msg: str, *, tag: str = "", publish: bool = False) -> None:
         # TODO: reuse code
         # _log(self, msg: str, *, tag: str = "", level=Literal["warning", "error", ..]) -> None:
         # getattr(logger.patch(lambda r: r.update(caller_info)), level)(msg)
@@ -172,7 +219,10 @@ class RDAgentLog(SingletonBaseClass):
         logger.patch(lambda r: r.update(caller_info)).warning(msg)
         logger.remove(file_handler_id)
 
-    def error(self, msg: str, *, tag: str = "") -> None:
+        if publish:
+            self.publish_to_thread(msg)
+
+    def error(self, msg: str, *, tag: str = "", publish: bool = False) -> None:
         caller_info = get_caller_info()
 
         tag = f"{self._tag}.{tag}.{self.get_pids()}".strip(".")
@@ -181,3 +231,6 @@ class RDAgentLog(SingletonBaseClass):
         )
         logger.patch(lambda r: r.update(caller_info)).error(msg)
         logger.remove(file_handler_id)
+
+        if publish:
+            self.publish_to_thread(msg)
