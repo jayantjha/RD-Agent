@@ -219,21 +219,26 @@ def get_manual_approval(message_content: str) -> bool:
     """
     Get manual approval from the user for the given message.
     """
-    connection_string = RD_AGENT_SETTINGS.agent_connection_string
+    endpoint = RD_AGENT_SETTINGS.endpoint
+    subscription_id = RD_AGENT_SETTINGS.subscription_id
+    resource_group_name = RD_AGENT_SETTINGS.resource_group_name
+    project_name = RD_AGENT_SETTINGS.project_name
     control_thread_id = RD_AGENT_SETTINGS.thread_id
 
-    if not connection_string or not control_thread_id:
+    if not endpoint or not subscription_id or not project_name or not resource_group_name or not control_thread_id:
         return True
 
     try:
-        credential = DefaultAzureCredential()
         request_id = str(uuid.uuid4()) 
         payload = json.dumps({"type": "approval", "requestId": request_id, "message": message_content})
         
-        with AIProjectClient.from_connection_string(
-                    credential=credential,
-                    conn_str=connection_string,
-                ) as project_client:
+        with AIProjectClient(
+            credential=DefaultAzureCredential(),
+            endpoint=endpoint,
+            subscription_id=subscription_id,
+            resource_group_name=resource_group_name,
+            project_name=project_name,
+        ) as project_client:
             
             message = project_client.agents.create_message(
                 thread_id=control_thread_id, 

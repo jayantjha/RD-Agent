@@ -76,13 +76,21 @@ class RDAgentLog(SingletonBaseClass):
 
         # Initialize project client and thread
         try:
-            connection_string = RD_AGENT_SETTINGS.agent_connection_string
-            if not connection_string:
+            endpoint = RD_AGENT_SETTINGS.endpoint
+            subscription_id = RD_AGENT_SETTINGS.subscription_id
+            resource_group_name = RD_AGENT_SETTINGS.resource_group_name
+            project_name = RD_AGENT_SETTINGS.project_name
+            control_thread_id = RD_AGENT_SETTINGS.thread_id
+
+            if not endpoint or not subscription_id or not project_name or not resource_group_name or not control_thread_id:
                 raise ValueError("Agent connection string is not set in RD_AGENT_SETTINGS.")
 
-            self.project_client = AIProjectClient.from_connection_string(
+            self.project_client = AIProjectClient(
                 credential=DefaultAzureCredential(),
-                conn_str=connection_string,
+                endpoint=endpoint,
+                subscription_id=subscription_id,
+                resource_group_name=resource_group_name,
+                project_name=project_name,
             )
         except Exception as e:
             pass
@@ -106,9 +114,9 @@ class RDAgentLog(SingletonBaseClass):
             )
 
             if not message:
-                raise ValueError(f"Failed to pass message to thread {self.thread.id}.")
+                raise ValueError(f"Failed to pass message to thread.")
 
-            self.info(f"Message successfully sent to thread {self.thread.id}.")
+            self.info(f"Message successfully sent to thread.")
         except Exception as e:
             # Log the exception object
             self.info(e, tag="send_message_to_thread_error")
