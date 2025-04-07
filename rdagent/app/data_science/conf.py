@@ -32,5 +32,10 @@ class DataScienceBasePropSetting(KaggleBasePropSetting):
     coder_max_loop: int = 10
     runner_max_loop: int = 3
 
+    session_root_path: str = ""
+    """The root path of the session. It is used to load the session from the disk."""
+    use_mle_benchmark: bool = True
+    """Use MLE benchmark for evaluation"""
+
 
 DS_RD_SETTING = DataScienceBasePropSetting()

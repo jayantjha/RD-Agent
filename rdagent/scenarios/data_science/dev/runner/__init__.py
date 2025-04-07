@@ -120,19 +120,20 @@ class DSCoSTEERRunner(CoSTEER):
             raise RunnerError(f"Metrics file (scores.csv) is not generated")
         exp.result = pd.read_csv(score_fp, index_col=0)
 
-        # DockerEnv for MLEBench submission validation
-        mde = get_ds_env(conf_type="mlebench")
-        mde.conf.extra_volumes = {f"{DS_RD_SETTING.local_data_path}/zip_files": "/mle/data"}
-        mde.prepare()
-        # MLEBench Check
-        mle_check_code = (
-            (Path(__file__).absolute().resolve().parent / "eval_tests" / "mle_submission_format_test.txt")
-            .read_text()
-            .replace("<competition_id>", self.scen.competition)
-        )
-        exp.experiment_workspace.inject_files(**{"test/mle_submission_format_test.py": mle_check_code})
-        exp.format_check_result = exp.experiment_workspace.execute(
-            env=mde, entry=f"python test/mle_submission_format_test.py"
-        )
+        if DS_RD_SETTING.use_mle_benchmark:
+            # DockerEnv for MLEBench submission validation
+            mde = get_ds_env(conf_type="mlebench")
+            mde.conf.extra_volumes = {f"{DS_RD_SETTING.local_data_path}/zip_files": "/mle/data"}
+            mde.prepare()
+            # MLEBench Check
+            mle_check_code = (
+                (Path(__file__).absolute().resolve().parent / "eval_tests" / "mle_submission_format_test.txt")
+                .read_text()
+                .replace("<competition_id>", self.scen.competition)
+            )
+            exp.experiment_workspace.inject_files(**{"test/mle_submission_format_test.py": mle_check_code})
+            exp.format_check_result = exp.experiment_workspace.execute(
+                env=mde, entry=f"python test/mle_submission_format_test.py"
+            )
 
         return exp

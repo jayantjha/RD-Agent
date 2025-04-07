@@ -18,6 +18,7 @@ from rdagent.components.coder.data_science.workflow import WorkflowCoSTEER
 from rdagent.components.coder.data_science.workflow.exp import WorkflowTask
 from rdagent.components.workflow.conf import BasePropSetting
 from rdagent.components.workflow.rd_loop import RDLoop
+from rdagent.core.conf import RD_AGENT_SETTINGS
 from rdagent.core.exception import CoderError, RunnerError
 from rdagent.core.proposal import ExperimentFeedback
 from rdagent.core.scenario import Scenario
@@ -28,7 +29,7 @@ from rdagent.scenarios.data_science.dev.runner import DSCoSTEERRunner
 from rdagent.scenarios.data_science.experiment.experiment import DSExperiment
 from rdagent.scenarios.data_science.proposal.exp_gen import DSExpGen, DSTrace
 from rdagent.scenarios.kaggle.kaggle_crawler import download_data
-
+import uuid
 
 class DataScienceRDLoop(RDLoop):
     skip_loop_error = (CoderError, RunnerError)
@@ -183,6 +184,11 @@ def main(
     """
     if competition is not None:
         DS_RD_SETTING.competition = competition
+
+    if DS_RD_SETTING.session_root_path:
+        session_id = str(uuid.uuid4())
+        logger.set_trace_path(Path(DS_RD_SETTING.session_root_path) / session_id / "log")
+        RD_AGENT_SETTINGS.workspace_path = Path(DS_RD_SETTING.session_root_path) / session_id / "workspace"
 
     if DS_RD_SETTING.competition:
         if DS_RD_SETTING.scen.endswith("KaggleScen"):
