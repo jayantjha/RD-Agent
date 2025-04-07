@@ -76,21 +76,13 @@ class RDAgentLog(SingletonBaseClass):
 
         # Initialize project client and thread
         try:
-            endpoint = RD_AGENT_SETTINGS.endpoint
-            subscription_id = RD_AGENT_SETTINGS.subscription_id
-            resource_group_name = RD_AGENT_SETTINGS.resource_group_name
-            project_name = RD_AGENT_SETTINGS.project_name
-            control_thread_id = RD_AGENT_SETTINGS.thread_id
-
-            if not endpoint or not subscription_id or not project_name or not resource_group_name or not control_thread_id:
+            connection_string = RD_AGENT_SETTINGS.project_connection_string
+            if not connection_string:
                 raise ValueError("Agent connection string is not set in RD_AGENT_SETTINGS.")
 
-            self.project_client = AIProjectClient(
+            self.project_client = AIProjectClient.from_connection_string(
                 credential=DefaultAzureCredential(),
-                endpoint=endpoint,
-                subscription_id=subscription_id,
-                resource_group_name=resource_group_name,
-                project_name=project_name,
+                conn_str=connection_string,
             )
         except Exception as e:
             pass
