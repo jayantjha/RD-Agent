@@ -245,7 +245,10 @@ def get_manual_approval(message_content: str) -> bool:
                 role="assistant", 
                 content=payload)
             
+            print("wating for approval...", end='')
+
             while (1): 
+                print(".", end='')
                 time.sleep(10)
                 messages = project_client.agents.list_messages(thread_id=control_thread_id)
                 last_message = messages.get_last_text_message_by_role(role="user") 
