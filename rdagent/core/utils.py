@@ -219,7 +219,7 @@ def get_manual_approval(message_content: str) -> bool:
     """
     Get manual approval from the user for the given message.
     """
-    connection_string = RD_AGENT_SETTINGS.project_connection_string
+    connection_string = RD_AGENT_SETTINGS.project_conn_string
     control_thread_id = RD_AGENT_SETTINGS.thread_id
 
     if not connection_string or not control_thread_id:

@@ -22,6 +22,7 @@ from rdagent.core.exception import CoderError, RunnerError
 from rdagent.core.proposal import ExperimentFeedback
 from rdagent.core.scenario import Scenario
 from rdagent.core.utils import import_class
+from rdagent.core.utils import get_manual_approval
 from rdagent.log import rdagent_logger as logger
 from rdagent.scenarios.data_science.dev.feedback import DSExperiment2Feedback
 from rdagent.scenarios.data_science.dev.runner import DSCoSTEERRunner
@@ -36,6 +37,7 @@ class DataScienceRDLoop(RDLoop):
     def __init__(self, PROP_SETTING: BasePropSetting):
         logger.log_object(PROP_SETTING.competition, tag="competition")
         logger.info(msg="DataScienceRDLoop is initialized", publish=True)
+        # get_manual_approval("Do you want to continue the loop?")
         
         scen: Scenario = import_class(PROP_SETTING.scen)(PROP_SETTING.competition)
 

@@ -76,7 +76,7 @@ class RDAgentLog(SingletonBaseClass):
 
         # Initialize project client and thread
         try:
-            connection_string = RD_AGENT_SETTINGS.project_connection_string
+            connection_string = RD_AGENT_SETTINGS.project_conn_string
             if not connection_string:
                 raise ValueError("Agent connection string is not set in RD_AGENT_SETTINGS.")
 

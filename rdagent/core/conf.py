@@ -81,7 +81,7 @@ class RDAgentSettings(ExtendedBaseSettings):
     """The limitation of context stdout"""
     stdout_context_len: int = 400
     stdout_line_len: int = 10000
-    project_connection_string: str = Field("", env="PROJECT_CONN_STRING")
+    project_conn_string: str = Field("", env="PROJECT_CONN_STRING")
     thread_id: str = Field("", env="THREAD_ID")
 
 RD_AGENT_SETTINGS = RDAgentSettings()
