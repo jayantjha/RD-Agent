@@ -33,9 +33,7 @@ ENV RDAGENT_BRANCH=develop
 ENV RDAGENT_GH_REPO=https://github.com/jayantjha/RD-Agent.git
 ENV DS_CODER_COSTEER_ENV_TYPE=conda
 
-RUN echo "source activate kaggle" >> ~/.bashrc && \
-    source activate kaggle && \
-    echo "Cloning repository from ${RDAGENT_GH_REPO} | branch ${RDAGENT_BRANCH}" && \
-    git clone --depth 1 --branch "${RDAGENT_BRANCH}" "${RDAGENT_GH_REPO}" rdagent_repo && \
-    pip install -r ./rdagent_repo/requirements.txt && \
-    pip install ./rdagent_repo
+COPY startup.sh /workspace/startup.sh
+RUN chmod +x /workspace/startup.sh
+
+ENTRYPOINT ["/workspace/startup.sh"]
