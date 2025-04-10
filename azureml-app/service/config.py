@@ -3,7 +3,7 @@
 SUBSCRIPTION_ID = "696debc0-8b66-4d84-87b1-39f43917d76c"
 RESOURCE_GROUP = "pritamd-rg"
 AML_WORKSPACE = "rdagent-poc"
-ENVIRONMENT = "rdagent:4"
+ENVIRONMENT = "rdagent:8"
 COMPUTE = "rdagent-cluster"
 EXPERIMENT_NAME = "agent-triggered-jobs"
 MANAGED_IDENTITY_CLIENT_ID = "a45683ae-a07e-4d5b-9b32-d7d64a0cff00"
@@ -19,6 +19,7 @@ APP_INSIGHTS_CONNECTION_STRING = (
 )
 
 COMMAND_EXECUTE = (
+    "/workspace/startup.sh "
     "wget https://github.com/SunsetWolf/rdagent_resource/releases/download/kaggle_data/kaggle_data.zip && "
     "rm -rf git_ignore_folder && "
     "mkdir -p git_ignore_folder && "
