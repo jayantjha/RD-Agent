@@ -66,7 +66,8 @@ class DataScienceRDLoop(RDLoop):
         # self.trace = KGTrace(scen=scen, knowledge_base=knowledge_base)
         self.trace = DSTrace(scen=scen)
         self.summarizer = DSExperiment2Feedback(scen)
-        super(RDLoop, self).__init__()
+        super(RDLoop, self).__init__() 
+        publish_trace("DS_LOOP", TaskStatus.INPROGRESS, "initialized")
 
     def direct_exp_gen(self, prev_out: dict[str, Any]):
         publish_trace("EXPERIMENT_GENERATION", TaskStatus.STARTED, "experiment generation started")

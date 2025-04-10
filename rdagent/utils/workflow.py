@@ -19,6 +19,7 @@ from typing import Any, Callable, Optional, TypeVar, Union, cast
 from tqdm.auto import tqdm
 
 from rdagent.log import rdagent_logger as logger
+from rdagent.utils.foundry_agent import TaskStatus, publish_trace
 
 
 class LoopMeta(type):
@@ -103,7 +104,7 @@ class LoopBase:
             How many steps to run; if current loop is incomplete, it will be counted as the first loop for completion
             `None` indicates to run forever until error or KeyboardInterrupt
         """
-        with tqdm(total=len(self.steps), desc="Workflow Progress", unit="step") as pbar:
+        with tqdm(total=len(self.steps), desc="Workflow Progress", unit="step") as pbar: 
             while True:
                 if step_n is not None:
                     if step_n <= 0:
@@ -115,7 +116,10 @@ class LoopBase:
 
                 li, si = self.loop_idx, self.step_idx
                 name = self.steps[si]
+                
                 logger.info(f"Start Loop {li}, Step {si}: {name}")
+                publish_trace("RDLOOP", TaskStatus.STARTED, f"Start Loop {li}, Step {si}: {name}")
+                
                 with logger.tag(f"Loop_{li}.{name}"):
                     start = datetime.datetime.now(datetime.timezone.utc)
                     func: Callable[..., Any] = cast(Callable[..., Any], getattr(self, name))

@@ -42,7 +42,8 @@ class DataScienceScen(Scenario):
 
         publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Getting metrics direction")
         self.metric_direction = self._get_direction()
-        self.eda_output = None
+        self.eda_output = None 
+        publish_trace("DS_SCENARIO", TaskStatus.COMPLETED, "Initialized Data Science Scenario")
 
     def _get_description(self):
         if (fp := Path(f"{DS_RD_SETTING.local_data_path}/{self.competition}.json")).exists():
