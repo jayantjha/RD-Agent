@@ -70,7 +70,9 @@ async def execute_agent(request: AgentRequest):
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
             content={
-                "status": "Agent task submitted"
+                "status": "Agent task submitted",
+                "agent_id": agentid,
+                "thread_id": thread.id,
             }
 )
 
