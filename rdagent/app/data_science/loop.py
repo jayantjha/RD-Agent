@@ -22,6 +22,7 @@ from rdagent.core.exception import CoderError, RunnerError
 from rdagent.core.proposal import ExperimentFeedback
 from rdagent.core.scenario import Scenario
 from rdagent.core.utils import import_class
+from rdagent.utils.foundry_agent import TaskStatus, publish_trace
 from rdagent.log import rdagent_logger as logger
 from rdagent.scenarios.data_science.dev.feedback import DSExperiment2Feedback
 from rdagent.scenarios.data_science.dev.runner import DSCoSTEERRunner
@@ -181,6 +182,8 @@ def main(
         dotenv run -- python rdagent/app/data_science/loop.py [--competition titanic] $LOG_PATH/__session__/1/0_propose  --step_n 1   # `step_n` is a optional parameter
         rdagent kaggle --competition playground-series-s4e8  # You are encouraged to use this one.
     """
+    publish_trace("DS_LOOP", TaskStatus.STARTED, "data science loop started")
+
     if competition is not None:
         DS_RD_SETTING.competition = competition
 
@@ -193,6 +196,9 @@ def main(
                 return
     else:
         logger.error("Please specify competition name.")
+
+    publish_trace("DS_LOOP", TaskStatus.INPROGRESS, "data sourcing done, downloaded to local data path")
+
     if path is None:
         kaggle_loop = DataScienceRDLoop(DS_RD_SETTING)
     else:
