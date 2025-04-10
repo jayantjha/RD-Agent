@@ -17,20 +17,30 @@ from rdagent.scenarios.kaggle.kaggle_crawler import (
     leaderboard_scores,
 )
 from rdagent.utils.agent.tpl import T
+from rdagent.utils.foundry_agent import TaskStatus, publish_trace
 
 
 class DataScienceScen(Scenario):
     """Data Science Scenario"""
 
     def __init__(self, competition: str) -> None:
+        publish_trace("DS_SCENARIO", TaskStatus.STARTED, "Initializing Data Science Scenario")
         self.metric_name: str | None = (
             None  # It is None when initialization. After analysing, we'll assign the metric name
         )
 
         self.competition = competition
-        self.raw_description = self._get_description()
+
+        publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Getting description")
+        self.raw_description = self._get_description() 
+
+        publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Getting folder description")
         self.processed_data_folder_description = self._get_data_folder_description()
+
+        publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Analyzing competition description")
         self._analysis_competition_description()
+
+        publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Getting metrics direction")
         self.metric_direction = self._get_direction()
         self.eda_output = None
 
