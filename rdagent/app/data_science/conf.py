@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic_settings import SettingsConfigDict
 
 from rdagent.app.kaggle.conf import KaggleBasePropSetting
@@ -34,8 +36,13 @@ class DataScienceBasePropSetting(KaggleBasePropSetting):
 
     session_root_path: str = ""
     """The root path of the session. It is used to load the session from the disk."""
-    use_mle_benchmark: bool = True
-    """Use MLE benchmark for evaluation"""
+
+    rule_base_eval: bool = False
+
+    ### model dump
+    enable_model_dump: bool = False
+    enable_doc_dev: bool = False
+    model_dump_check_level: Literal["medium", "high"] = "medium"
 
 
 DS_RD_SETTING = DataScienceBasePropSetting()
