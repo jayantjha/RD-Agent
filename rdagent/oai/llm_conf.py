@@ -116,5 +116,11 @@ class LLMSettings(ExtendedBaseSettings):
 
     chat_model_map: str = "{}"
 
+    use_azure_ai_agents:bool = False
+    azure_ai_agents_backend: str = "rdagent.oai.backend.AgentsAPIBackend"
+    project_connection_string: str = ""
+    coder_agent_id: str = ""
+    research_agent_id: str = ""
+
 
 LLM_SETTINGS = LLMSettings()

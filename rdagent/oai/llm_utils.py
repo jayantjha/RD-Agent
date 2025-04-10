@@ -36,7 +36,10 @@ def get_api_backend(*args: Any, **kwargs: Any) -> BaseAPIBackend:  # TODO: impor
     """
     get llm api backend based on settings dynamically.
     """
-    api_backend_cls: Type[BaseAPIBackend] = import_class(LLM_SETTINGS.backend)
+    if LLM_SETTINGS.use_azure_ai_agents:
+        api_backend_cls: Type[BaseAPIBackend] = import_class(LLM_SETTINGS.azure_ai_agents_backend)
+    else:
+        api_backend_cls: Type[BaseAPIBackend] = import_class(LLM_SETTINGS.backend)
     return api_backend_cls(*args, **kwargs)
 
 
