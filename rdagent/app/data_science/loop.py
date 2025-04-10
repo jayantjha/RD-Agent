@@ -86,9 +86,9 @@ class DataScienceRDLoop(RDLoop):
             exp.sub_tasks = tasks
             with logger.tag(f"{exp.sub_tasks[0].__class__.__name__}"):
                 if isinstance(exp.sub_tasks[0], DataLoaderTask):
-                    publish_trace("DATA_LOADING", TaskStatus.STARTED, "Code generation for loading data started")
+                    publish_trace("LOAD_DATA_TASK", TaskStatus.STARTED, "Code generation for loading data started")
                     exp = self.data_loader_coder.develop(exp)
-                    publish_trace("DATA_LOADING", TaskStatus.COMPLETED, "Code generation for loading data ended")
+                    publish_trace("LOAD_DATA_TASK", TaskStatus.COMPLETED, "Code generation for loading data ended")
                 elif isinstance(exp.sub_tasks[0], FeatureTask):
                     publish_trace("FEATURE_TASK", TaskStatus.STARTED, "")
                     exp = self.feature_coder.develop(exp)
@@ -113,15 +113,16 @@ class DataScienceRDLoop(RDLoop):
                     raise NotImplementedError(f"Unsupported component in DataScienceRDLoop: {exp.hypothesis.component}")
             exp.sub_tasks = []
         logger.log_object(exp)
+        publish_trace("CODING", TaskStatus.COMPLETED, "code implementation completed")
         return exp
 
     def running(self, prev_out: dict[str, Any]):
         exp: DSExperiment = prev_out["coding"]
         if exp.is_ready_to_run():
-            publish_trace("EXECUTION", TaskStatus.STARTED, "Executing code and evaluating model")
+            publish_trace("RUNNING", TaskStatus.STARTED, "Executing code and evaluating model")
             new_exp = self.runner.develop(exp)
             logger.log_object(new_exp)
-            publish_trace("EXECUTION", TaskStatus.COMPLETED, "Executing and evaluation complete")
+            publish_trace("RUNNING", TaskStatus.COMPLETED, "Executing and evaluation complete")
             return new_exp
         return exp
 
