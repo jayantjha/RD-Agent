@@ -1,0 +1,5 @@
+- build the docker image
+- run the docker image with /bin/bash
+- put .env in /workspace folder
+- you will also need kaggle.json from kaggle to run competitions
+- sometimes when running kaggle competition, you might get error related to accepting the rules. Go to kaggle and accept the rules for the competition in that case.
