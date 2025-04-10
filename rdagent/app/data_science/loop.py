@@ -69,30 +69,45 @@ class DataScienceRDLoop(RDLoop):
         super(RDLoop, self).__init__()
 
     def direct_exp_gen(self, prev_out: dict[str, Any]):
+        publish_trace("EXPERIMENT_GENERATION", TaskStatus.STARTED, "experiment generation started")
         exp = self.exp_gen.gen(self.trace)
         logger.log_object(exp)
 
         # FIXME: this is for LLM debug webapp, remove this when the debugging is done.
         logger.log_object(exp, tag="debug_exp_gen")
+        publish_trace("EXPERIMENT_GENERATION", TaskStatus.COMPLETED, "experiment generation completed")
         return exp
 
     def coding(self, prev_out: dict[str, Any]):
+        publish_trace("CODING", TaskStatus.STARTED, "Starting code implementation")
         exp = prev_out["direct_exp_gen"]
         for tasks in exp.pending_tasks_list:
             exp.sub_tasks = tasks
             with logger.tag(f"{exp.sub_tasks[0].__class__.__name__}"):
                 if isinstance(exp.sub_tasks[0], DataLoaderTask):
+                    publish_trace("DATA_LOADING", TaskStatus.STARTED, "Code generation for loading data started")
                     exp = self.data_loader_coder.develop(exp)
+                    publish_trace("DATA_LOADING", TaskStatus.COMPLETED, "Code generation for loading data ended")
                 elif isinstance(exp.sub_tasks[0], FeatureTask):
+                    publish_trace("FEATURE_TASK", TaskStatus.STARTED, "")
                     exp = self.feature_coder.develop(exp)
+                    publish_trace("FEATURE_TASK", TaskStatus.COMPLETED, "")
                 elif isinstance(exp.sub_tasks[0], ModelTask):
+                    publish_trace("MODEL_TASK", TaskStatus.STARTED, "")
                     exp = self.model_coder.develop(exp)
+                    publish_trace("MODEL_TASK", TaskStatus.COMPLETED, "")
                 elif isinstance(exp.sub_tasks[0], EnsembleTask):
+                    publish_trace("ENSEMBLE_TASK", TaskStatus.STARTED, "")
                     exp = self.ensemble_coder.develop(exp)
+                    publish_trace("ENSEMBLE_TASK", TaskStatus.COMPLETED, "")
                 elif isinstance(exp.sub_tasks[0], WorkflowTask):
+                    publish_trace("WORKFLOW_TASK", TaskStatus.STARTED, "")
                     exp = self.workflow_coder.develop(exp)
+                    publish_trace("WORKFLOW_TASK", TaskStatus.COMPLETED, "")
                 elif isinstance(exp.sub_tasks[0], PipelineTask):
+                    publish_trace("PIPELINE_TASK", TaskStatus.STARTED, "")
                     exp = self.pipeline_coder.develop(exp)
+                    publish_trace("PIPELINE_TASK", TaskStatus.COMPLETED, "")
                 else:
                     raise NotImplementedError(f"Unsupported component in DataScienceRDLoop: {exp.hypothesis.component}")
             exp.sub_tasks = []
@@ -102,8 +117,10 @@ class DataScienceRDLoop(RDLoop):
     def running(self, prev_out: dict[str, Any]):
         exp: DSExperiment = prev_out["coding"]
         if exp.is_ready_to_run():
+            publish_trace("EXECUTION", TaskStatus.STARTED, "Executing code and evaluating model")
             new_exp = self.runner.develop(exp)
             logger.log_object(new_exp)
+            publish_trace("EXECUTION", TaskStatus.COMPLETED, "Executing and evaluation complete")
             return new_exp
         return exp
 
@@ -112,6 +129,7 @@ class DataScienceRDLoop(RDLoop):
         Assumption:
         - If we come to feedback phase, the previous development steps are successful.
         """
+        publish_trace("FEEDBACK", TaskStatus.STARTED, "Generating feedback on experiment")
         exp: DSExperiment = prev_out["running"]
         if self.trace.next_incomplete_component() is None or DS_RD_SETTING.coder_on_whole_pipeline:
             # we have alreadly completed components in previous trace. So current loop is focusing on a new proposed idea.
@@ -124,9 +142,11 @@ class DataScienceRDLoop(RDLoop):
                 decision=True,
             )
         logger.log_object(feedback)
+        publish_trace("FEEDBACK", TaskStatus.COMPLETED, "Generating feedback on experiment")
         return feedback
 
     def record(self, prev_out: dict[str, Any]):
+        publish_trace("RECORD", TaskStatus.STARTED, "Recording experiment results")
         e = prev_out.get(self.EXCEPTION_KEY, None)
         if e is None:
             self.trace.hist.append((prev_out["running"], prev_out["feedback"]))
@@ -152,6 +172,7 @@ class DataScienceRDLoop(RDLoop):
                     self.trace = DSTrace(scen=self.trace.scen, knowledge_base=self.trace.knowledge_base)
         logger.log_object(self.trace, tag="trace")
         logger.log_object(self.trace.sota_experiment(), tag="SOTA experiment")
+        publish_trace("RECORD", TaskStatus.COMPLETED, "Experiment results recorded")
 
 
 def main(
