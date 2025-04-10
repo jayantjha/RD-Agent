@@ -62,15 +62,15 @@ def publish_trace(task: str, status: TaskStatus, message_content: str, **kwargs)
         
         payload = json.dumps(payload_dict)
         
-        with _get_project_client() as project_client:
-            message = project_client.agents.create_message(
-                thread_id=RD_AGENT_SETTINGS.thread_id,
-                role="assistant",
-                content=payload,
-            )
+        project_client = _get_project_client()
+        message = project_client.agents.create_message(
+            thread_id=RD_AGENT_SETTINGS.thread_id,
+            role="assistant",
+            content=payload,
+        )
 
-            if not message:
-                raise ValueError(f"Failed to pass message to thread.")
+        if not message:
+            raise ValueError(f"Failed to pass message to thread.")
 
     except Exception as e:
         # Log the exception object
