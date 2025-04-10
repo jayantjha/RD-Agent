@@ -1,3 +1,4 @@
+import enum
 import time
 import uuid
 import json
@@ -35,7 +36,13 @@ def _get_project_client():
     
     return _project_client
 
-def publish_to_thread(self, message_content: str) -> None:
+class TaskStatus(enum.Enum):
+    STARTED = "STARTED"
+    INPROGRESS = "IN_PROGRESS"
+    FAILED = "FAILED"
+    COMPLETED = "COMPLETED"
+
+def publish_trace(task: str, status: TaskStatus, message_content: str, **kwargs) -> None:
     """
     Sends a message to the thread associated with this logger.
 
@@ -45,17 +52,26 @@ def publish_to_thread(self, message_content: str) -> None:
         if not RD_AGENT_SETTINGS.thread_id:
             raise ValueError("Thread ID is not set.")
         
+        payload_dict = {
+            "task": task, 
+            "status": status.value, 
+            "message": message_content
+        }
+        if kwargs:
+            payload_dict.update(kwargs)
+        
+        payload = json.dumps(payload_dict)
+        
         with _get_project_client() as project_client:
             message = project_client.agents.create_message(
                 thread_id=RD_AGENT_SETTINGS.thread_id,
                 role="assistant",
-                content=message_content,
+                content=payload,
             )
 
             if not message:
                 raise ValueError(f"Failed to pass message to thread.")
 
-            logger.info(f"Message successfully sent to thread.")
     except Exception as e:
         # Log the exception object
         logger.info(e, tag="send_message_to_thread_error")
