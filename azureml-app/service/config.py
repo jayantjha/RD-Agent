@@ -10,6 +10,9 @@ MANAGED_IDENTITY_CLIENT_ID = "a45683ae-a07e-4d5b-9b32-d7d64a0cff00"
 PROJECT_CONNECTION_STRING="eastus2.api.azureml.ms;696debc0-8b66-4d84-87b1-39f43917d76c;rg-pritamd-7928_ai;pritamd-agent"
 MODEL_DEPLOYMENT_NAME="gpt-4"
 AGENT_ID="asst_pPTJItMqueYKSOFkAeg8goSf"
+AZURE_STORAGE_ACCOUNT_URL="https://rdagentpoc3274969426.blob.core.windows.net/"
+AZURE_STORAGE_CONTAINER_NAME="rd-agent"
+
 
 APP_INSIGHTS_CONNECTION_STRING = (
     "InstrumentationKey=fe75ff06-e2e4-423c-9684-edbf52f1c6ea;"
