@@ -10,7 +10,7 @@ from rdagent.components.coder.CoSTEER.evaluators import (
     CoSTEERMultiFeedback,
     CoSTEERSingleFeedback,
 )
-from rdagent.components.coder.data_science.conf import get_ds_env
+from rdagent.components.coder.data_science.conf import get_clear_ws_cmd, get_ds_env
 from rdagent.core.evolving_framework import QueriedKnowledge
 from rdagent.core.experiment import FBWorkspace, Task
 from rdagent.log import rdagent_logger as logger
@@ -66,7 +66,7 @@ class WorkflowGeneralCaseSpecEvaluator(CoSTEEREvaluator):
         # mde.prepare()
 
         # Clean the scores.csv & submission.csv.
-        implementation.execute(env=env, entry=f"rm submission.csv scores.csv")
+        implementation.execute(env=env, entry=get_clear_ws_cmd())
 
         stdout = implementation.execute(env=env, entry=f"python -m coverage run main.py")
 
@@ -127,7 +127,8 @@ class WorkflowGeneralCaseSpecEvaluator(CoSTEEREvaluator):
         stdout += "\n" + submission_check_out
 
         system_prompt = T(".prompts:workflow_eval.system").r(
-            scenario=self.scen.get_scenario_all_desc(),
+            # here we pass `None` to `eda_output` because we do not have nor need EDA output for workflow.
+            scenario=self.scen.get_scenario_all_desc(eda_output=None),
             task_desc=target_task.get_task_information(),
             spec=(
                 implementation.file_dict["spec/workflow.md"]
