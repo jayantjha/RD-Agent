@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 class AgentRequest(BaseModel):
-    user_prompt: str
-    data_uri: str
+    user_prompt: str | None
+    data_uri: str | None
