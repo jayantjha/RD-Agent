@@ -418,6 +418,22 @@ export default function MLAgentPage() {
     // Connect to the streaming updates endpoint
     connectToEventStream()
   }
+
+  // event mappings
+  const mappings: Record<string, string> = {
+    "DS_LOOP": "ML Agent",
+    "DS_SCENARIO": "Understanding data and requirements",
+    "RDLOOP": "Main R & D loop",
+    "CODING": "Coder agent",
+    "EXPERIMENT_GENERATION": "Generating experiment for the loop",
+    "DATA_LOADING": "Code for loading data",
+    "FEATURE_TASK": "Code for feature engineering",
+    "MODEL_TASK": "Code for hypothesized model",
+    "ENSEMBLE_TASK": "Generating ensemble model",
+    "WORKFLOW_TASK": "Developing workflow",
+    "FEEDBACK": "Gathering feedback for the loop",
+    "RECORD": "Recording results"
+  }
   
   const connectToEventStream = () => {
     // Close any existing connection
@@ -426,12 +442,13 @@ export default function MLAgentPage() {
     }
     
     // Create a new EventSource connection
-    const newEventSource = new EventSource('http://localhost:5000/updates')
+    const newEventSource = new EventSource('http://localhost:5000/updates/saved/thread_r4EZ1fbjwQiUmrtZUULEjh8M')
     setEventSource(newEventSource)
 
     // Set up event handlers
     newEventSource.onmessage = (event) => {
       try {
+        console.log(event)
         const data = JSON.parse(event.data)
         processAgentActivity(data)
       } catch (error) {
@@ -466,7 +483,7 @@ export default function MLAgentPage() {
     const activity = {
       id: data.id || `activity-${Date.now()}`,
       timestamp: new Date(data.createdAt * 1000),
-      message: `${data.task} : ${data.status}`,
+      message: `${mappings[data.task] || data.task} : ${data.status.toLowerCase()}`,
       shortDescription: data.shortDescription || "",
       details: data.message || "No details provided",
       type: data.type || "info",
