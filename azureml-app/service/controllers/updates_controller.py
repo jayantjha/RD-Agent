@@ -6,24 +6,18 @@ from fastapi.responses import StreamingResponse
 from config import PROJECT_CONNECTION_STRING
 from azure.ai.projects.aio import AIProjectClient
 from azure.identity.aio import DefaultAzureCredential
+from typing import Set, AsyncGenerator
 
 router = APIRouter()
 
-async def event_stream():
-    while True:
-        await asyncio.sleep(2)
-        guid = str(uuid.uuid4())
-        message = f"data: {{\"id\": \"{guid}\", \"message\": \"This is a stream update.\"}}\n\n"
-        yield message
-
-async def event_saved_stream(messages: list):
-    for msg in messages:
-        await asyncio.sleep(1)
-        yield f"data: {msg}\n\n"
-
 @router.get("/updates/{thread_id}")
 async def get_updates(thread_id: str):
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+    async with DefaultAzureCredential() as creds:
+        project_client = AIProjectClient.from_connection_string(
+            credential=creds, conn_str=PROJECT_CONNECTION_STRING
+        )
+        
+    return StreamingResponse(event_stream_polling(project_client, thread_id), media_type="text/event-stream")
 
 @router.get("/updates/saved/{thread_id}")
 async def get_saved_updates(thread_id: str):
@@ -59,11 +53,54 @@ async def get_saved_updates(thread_id: str):
                         try:
                             parsed = json.loads(msg.content[0].text.value)
                             parsed["createdAt"] = timestamp
+                            parsed["id"] = msg.id
                             simplified_messages.append(parsed)
                         except json.JSONDecodeError as e:
                             print(f"Skipping message due to JSON error: {e}")
             
     return StreamingResponse(event_saved_stream(simplified_messages), media_type="text/event-stream")
+
+async def event_stream_polling(project_client, thread_id: str):
+    seen_ids: Set[str] = set()
+
+    while True:
+        try:
+            new_messages = []
+
+            async for page in get_all_messages_paged(project_client, thread_id, page_size=100):
+                for msg in page.data:
+                    if msg.id in seen_ids:
+                        continue
+                    seen_ids.add(msg.id)
+
+                    try:
+                        text_value = (
+                            msg.content[0].text.value
+                            if msg.content and hasattr(msg.content[0], 'text') and msg.content[0].text
+                            else None
+                        )
+                        if text_value:
+                            parsed = json.loads(text_value)
+                            if hasattr(msg.created_at, 'timestamp'):
+                                parsed["createdAt"] = int(msg.created_at.timestamp())
+                            new_messages.append(parsed)
+                    except (AttributeError, IndexError, json.JSONDecodeError) as e:
+                        print(f"Skipping message due to error: {e}")
+
+            for msg in reversed(new_messages):
+                await asyncio.sleep(1)
+                yield f"data: {json.dumps(msg)}\n\n"
+
+        except Exception as e:
+            print(f"Polling error: {e}")
+
+        await asyncio.sleep(30)
+
+
+async def event_saved_stream(messages: list):
+    for msg in messages:
+        await asyncio.sleep(1)
+        yield f"data: {json.dump(msg)}\n\n"
 
 async def get_all_messages_paged(project_client, thread_id, page_size=20):
     # Get the first page

@@ -133,3 +133,33 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Artifact tabs styling */
+.artifact-tabs .artifact-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  transition: all 0.15s ease;
+  color: #505050;
+}
+
+.artifact-tabs .artifact-tab[data-state="active"] {
+  background-color: #0078d4;
+  color: white;
+}
+
+.artifact-tabs .artifact-tab[data-state="active"] svg {
+  color: white;
+}
+
+.artifact-tabs .artifact-tab:hover:not([data-state="active"]) {
+  background-color: rgba(0, 120, 212, 0.1);
+}
+
+.artifact-tabs [role="tabpanel"] {
+  transition: all 0.2s ease-in-out;
+}

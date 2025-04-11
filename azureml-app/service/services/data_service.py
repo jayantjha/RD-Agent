@@ -9,11 +9,13 @@ def get_manifest_data(session_id: str, loop: int) -> Union[bytes, None]:
     
     # Construct the blob path
     blob_path = f"{session_id}/log/Loop_{loop}/manifest.json"
+    print(f"blob path: {blob_path}")
     return _get_blob_content(blob_path)
 
 def get_file_content_data(session_id: str, path: str) -> Union[bytes, None]:
     # Construct the blob path
     blob_path = f"{session_id}/{path}"
+    print(f"blob path: {blob_path}")
     return _get_blob_content(blob_path)
 
 def _get_blob_content(blob_path: str) -> bytes:
