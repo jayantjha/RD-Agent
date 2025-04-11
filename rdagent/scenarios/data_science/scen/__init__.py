@@ -42,7 +42,6 @@ class DataScienceScen(Scenario):
 
         publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Getting metrics direction")
         self.metric_direction = self._get_direction()
-        self.eda_output = None 
         publish_trace("DS_SCENARIO", TaskStatus.COMPLETED, "Initialized Data Science Scenario")
 
     def _get_description(self):
@@ -117,15 +116,18 @@ class DataScienceScen(Scenario):
             competition=self.competition,
         )
 
-    def get_scenario_all_desc(self) -> str:
+    def get_scenario_all_desc(self, eda_output=None) -> str:
+        """
+        eda_output depends on dynamic .md files from current workspace, not fixed.
+        """
         return T(".prompts:scenario_description").r(
             background=self.background,
             submission_specifications=self.submission_specifications,
             evaluation=self.metric_description,
             metric_name=self.metric_name,
             metric_direction=self.metric_direction,
-            eda_output=self.eda_output,
             time_limit=f"{DS_RD_SETTING.full_timeout / 60 / 60 : .2f} hours",
+            eda_output=eda_output,
         )
 
     def get_runtime_environment(self) -> str:
