@@ -57,3 +57,6 @@ azure.ai.inference
 # data folder desc
 humanize
 genson
+
+azure-ai-projects
+azure.storage.blob
