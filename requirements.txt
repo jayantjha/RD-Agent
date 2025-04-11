@@ -12,6 +12,7 @@ litellm
 azure.identity
 pyarrow
 rich
+tqdm
 
 numpy # we use numpy as default data format. So we have to install numpy
 pandas # we use pandas as default data format. So we have to install pandas
@@ -57,5 +58,5 @@ azure.ai.inference
 humanize
 genson
 
-# azure ai agents
 azure-ai-projects
+azure.storage.blob

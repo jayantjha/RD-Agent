@@ -14,10 +14,12 @@ from rdagent.components.coder.data_science.pipeline import PipelineCoSTEER
 from rdagent.components.coder.data_science.pipeline.exp import PipelineTask
 from rdagent.components.coder.data_science.raw_data_loader import DataLoaderCoSTEER
 from rdagent.components.coder.data_science.raw_data_loader.exp import DataLoaderTask
+from rdagent.components.coder.data_science.share.doc import DocDev
 from rdagent.components.coder.data_science.workflow import WorkflowCoSTEER
 from rdagent.components.coder.data_science.workflow.exp import WorkflowTask
 from rdagent.components.workflow.conf import BasePropSetting
 from rdagent.components.workflow.rd_loop import RDLoop
+from rdagent.core.conf import RD_AGENT_SETTINGS
 from rdagent.core.exception import CoderError, RunnerError
 from rdagent.core.proposal import ExperimentFeedback
 from rdagent.core.scenario import Scenario
@@ -28,8 +30,12 @@ from rdagent.scenarios.data_science.dev.feedback import DSExperiment2Feedback
 from rdagent.scenarios.data_science.dev.runner import DSCoSTEERRunner
 from rdagent.scenarios.data_science.experiment.experiment import DSExperiment
 from rdagent.scenarios.data_science.proposal.exp_gen import DSExpGen, DSTrace
+from rdagent.scenarios.data_science.proposal.exp_gen.select import (
+    LatestCKPSelector,
+    SOTAJumpCKPSelector,
+)
 from rdagent.scenarios.kaggle.kaggle_crawler import download_data
-
+import uuid
 
 class DataScienceRDLoop(RDLoop):
     skip_loop_error = (CoderError, RunnerError)
@@ -50,6 +56,7 @@ class DataScienceRDLoop(RDLoop):
 
         # 2) task generation from a complete solution
         # self.exp_gen: ExpGen = import_class(PROP_SETTING.exp_gen)(scen)
+        self.ckp_selector = LatestCKPSelector()
         self.exp_gen = DSExpGen(scen)
         self.data_loader_coder = DataLoaderCoSTEER(scen)
         self.feature_coder = FeatureCoSTEER(scen)
@@ -60,6 +67,8 @@ class DataScienceRDLoop(RDLoop):
         self.pipeline_coder = PipelineCoSTEER(scen)
 
         self.runner = DSCoSTEERRunner(scen)
+        if DS_RD_SETTING.enable_doc_dev:
+            self.docdev = DocDev(scen)
         # self.summarizer: Experiment2Feedback = import_class(PROP_SETTING.summarizer)(scen)
         # logger.log_object(self.summarizer, tag="summarizer")
 
@@ -70,7 +79,8 @@ class DataScienceRDLoop(RDLoop):
 
     def direct_exp_gen(self, prev_out: dict[str, Any]):
         publish_trace("EXPERIMENT_GENERATION", TaskStatus.STARTED, "experiment generation started")
-        exp = self.exp_gen.gen(self.trace)
+        selection = self.ckp_selector.get_selection(self.trace)
+        exp = self.exp_gen.gen(self.trace, selection)
         logger.log_object(exp)
 
         # FIXME: this is for LLM debug webapp, remove this when the debugging is done.
@@ -120,8 +130,10 @@ class DataScienceRDLoop(RDLoop):
             publish_trace("EXECUTION", TaskStatus.STARTED, "Executing code and evaluating model")
             new_exp = self.runner.develop(exp)
             logger.log_object(new_exp)
-            publish_trace("EXECUTION", TaskStatus.COMPLETED, "Executing and evaluation complete")
-            return new_exp
+            exp = new_exp
+        if DS_RD_SETTING.enable_doc_dev:
+            self.docdev.develop(exp)
+        publish_trace("EXECUTION", TaskStatus.COMPLETED, "Executing and evaluation complete")
         return exp
 
     def feedback(self, prev_out: dict[str, Any]) -> ExperimentFeedback:
@@ -147,6 +159,10 @@ class DataScienceRDLoop(RDLoop):
 
     def record(self, prev_out: dict[str, Any]):
         publish_trace("RECORD", TaskStatus.STARTED, "Recording experiment results")
+
+        # set the DAG parent for the trace
+        self.trace.sync_dag_parent_and_hist()
+
         e = prev_out.get(self.EXCEPTION_KEY, None)
         if e is None:
             self.trace.hist.append((prev_out["running"], prev_out["feedback"]))
@@ -207,6 +223,11 @@ def main(
 
     if competition is not None:
         DS_RD_SETTING.competition = competition
+
+    if DS_RD_SETTING.session_root_path:
+        session_id = str(uuid.uuid4())
+        logger.set_trace_path(Path(DS_RD_SETTING.session_root_path) / session_id / "log")
+        RD_AGENT_SETTINGS.workspace_path = Path(DS_RD_SETTING.session_root_path) / session_id / "workspace"
 
     if DS_RD_SETTING.competition:
         if DS_RD_SETTING.scen.endswith("KaggleScen"):
