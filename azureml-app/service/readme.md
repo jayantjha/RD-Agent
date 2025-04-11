@@ -39,7 +39,7 @@ To run the service locally using `uvicorn`, follow these steps:
 
 2. Start the service with `uvicorn`:
    ```bash
-   uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+   uvicorn main:app --host 0.0.0.0 --port 5000 --reload
    ```
 
    - Replace `main:app` with the appropriate module and application name if different.

@@ -3,6 +3,7 @@
 .DS_Store
 Pipfile
 public
+!azureml-app/client/public/
 release-notes.md
 typescript*
 
@@ -23,6 +24,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!azureml-app/client/lib/
 lib64/
 parts/
 sdist/
