@@ -24,6 +24,7 @@ from rdagent.core.exception import CoderError, RunnerError
 from rdagent.core.proposal import ExperimentFeedback
 from rdagent.core.scenario import Scenario
 from rdagent.core.utils import import_class
+from rdagent.utils.foundry_agent import TaskStatus, publish_trace
 from rdagent.log import rdagent_logger as logger
 from rdagent.scenarios.data_science.dev.feedback import DSExperiment2Feedback
 from rdagent.scenarios.data_science.dev.runner import DSCoSTEERRunner
@@ -74,48 +75,67 @@ class DataScienceRDLoop(RDLoop):
         # self.trace = KGTrace(scen=scen, knowledge_base=knowledge_base)
         self.trace = DSTrace(scen=scen)
         self.summarizer = DSExperiment2Feedback(scen)
-        super(RDLoop, self).__init__()
+        super(RDLoop, self).__init__() 
+        publish_trace("DS_LOOP", TaskStatus.INPROGRESS, "initialized")
 
     def direct_exp_gen(self, prev_out: dict[str, Any]):
+        publish_trace("EXPERIMENT_GENERATION", TaskStatus.STARTED, "experiment generation started")
         selection = self.ckp_selector.get_selection(self.trace)
         exp = self.exp_gen.gen(self.trace, selection)
         logger.log_object(exp)
 
         # FIXME: this is for LLM debug webapp, remove this when the debugging is done.
         logger.log_object(exp, tag="debug_exp_gen")
+        publish_trace("EXPERIMENT_GENERATION", TaskStatus.COMPLETED, "experiment generation completed")
         return exp
 
     def coding(self, prev_out: dict[str, Any]):
+        publish_trace("CODING", TaskStatus.STARTED, "Starting code implementation")
         exp = prev_out["direct_exp_gen"]
         for tasks in exp.pending_tasks_list:
             exp.sub_tasks = tasks
             with logger.tag(f"{exp.sub_tasks[0].__class__.__name__}"):
                 if isinstance(exp.sub_tasks[0], DataLoaderTask):
+                    publish_trace("LOAD_DATA_TASK", TaskStatus.STARTED, "Code generation for loading data started")
                     exp = self.data_loader_coder.develop(exp)
+                    publish_trace("LOAD_DATA_TASK", TaskStatus.COMPLETED, "Code generation for loading data ended")
                 elif isinstance(exp.sub_tasks[0], FeatureTask):
+                    publish_trace("FEATURE_TASK", TaskStatus.STARTED, "")
                     exp = self.feature_coder.develop(exp)
+                    publish_trace("FEATURE_TASK", TaskStatus.COMPLETED, "")
                 elif isinstance(exp.sub_tasks[0], ModelTask):
+                    publish_trace("MODEL_TASK", TaskStatus.STARTED, "")
                     exp = self.model_coder.develop(exp)
+                    publish_trace("MODEL_TASK", TaskStatus.COMPLETED, "")
                 elif isinstance(exp.sub_tasks[0], EnsembleTask):
+                    publish_trace("ENSEMBLE_TASK", TaskStatus.STARTED, "")
                     exp = self.ensemble_coder.develop(exp)
+                    publish_trace("ENSEMBLE_TASK", TaskStatus.COMPLETED, "")
                 elif isinstance(exp.sub_tasks[0], WorkflowTask):
+                    publish_trace("WORKFLOW_TASK", TaskStatus.STARTED, "")
                     exp = self.workflow_coder.develop(exp)
+                    publish_trace("WORKFLOW_TASK", TaskStatus.COMPLETED, "")
                 elif isinstance(exp.sub_tasks[0], PipelineTask):
+                    publish_trace("PIPELINE_TASK", TaskStatus.STARTED, "")
                     exp = self.pipeline_coder.develop(exp)
+                    publish_trace("PIPELINE_TASK", TaskStatus.COMPLETED, "")
                 else:
                     raise NotImplementedError(f"Unsupported component in DataScienceRDLoop: {exp.hypothesis.component}")
             exp.sub_tasks = []
         logger.log_object(exp)
+        publish_trace("CODING", TaskStatus.COMPLETED, "code implementation completed")
         return exp
 
     def running(self, prev_out: dict[str, Any]):
         exp: DSExperiment = prev_out["coding"]
         if exp.is_ready_to_run():
+            publish_trace("RUNNING", TaskStatus.STARTED, "Executing code and evaluating model")
             new_exp = self.runner.develop(exp)
             logger.log_object(new_exp)
             exp = new_exp
         if DS_RD_SETTING.enable_doc_dev:
             self.docdev.develop(exp)
+        publish_trace("RUNNING", TaskStatus.COMPLETED, "Executing and evaluation complete")
         return exp
 
     def feedback(self, prev_out: dict[str, Any]) -> ExperimentFeedback:
@@ -123,6 +143,7 @@ class DataScienceRDLoop(RDLoop):
         Assumption:
         - If we come to feedback phase, the previous development steps are successful.
         """
+        publish_trace("FEEDBACK", TaskStatus.STARTED, "Generating feedback on experiment")
         exp: DSExperiment = prev_out["running"]
         if self.trace.next_incomplete_component() is None or DS_RD_SETTING.coder_on_whole_pipeline:
             # we have alreadly completed components in previous trace. So current loop is focusing on a new proposed idea.
@@ -135,9 +156,11 @@ class DataScienceRDLoop(RDLoop):
                 decision=True,
             )
         logger.log_object(feedback)
+        publish_trace("FEEDBACK", TaskStatus.COMPLETED, "Generating feedback on experiment")
         return feedback
 
     def record(self, prev_out: dict[str, Any]):
+        publish_trace("RECORD", TaskStatus.STARTED, "Recording experiment results")
 
         # set the DAG parent for the trace
         self.trace.sync_dag_parent_and_hist()
@@ -167,6 +190,7 @@ class DataScienceRDLoop(RDLoop):
                     self.trace = DSTrace(scen=self.trace.scen, knowledge_base=self.trace.knowledge_base)
         logger.log_object(self.trace, tag="trace")
         logger.log_object(self.trace.sota_experiment(), tag="SOTA experiment")
+        publish_trace("RECORD", TaskStatus.COMPLETED, "Experiment results recorded")
 
 
 def main(
@@ -197,6 +221,8 @@ def main(
         dotenv run -- python rdagent/app/data_science/loop.py [--competition titanic] $LOG_PATH/__session__/1/0_propose  --step_n 1   # `step_n` is a optional parameter
         rdagent kaggle --competition playground-series-s4e8  # You are encouraged to use this one.
     """
+    publish_trace("DS_LOOP", TaskStatus.STARTED, "data science loop started")
+
     if competition is not None:
         DS_RD_SETTING.competition = competition
 
@@ -214,6 +240,9 @@ def main(
                 return
     else:
         logger.error("Please specify competition name.")
+
+    publish_trace("DS_LOOP", TaskStatus.INPROGRESS, "data sourcing done, downloaded to local data path")
+
     if path is None:
         kaggle_loop = DataScienceRDLoop(DS_RD_SETTING)
     else:

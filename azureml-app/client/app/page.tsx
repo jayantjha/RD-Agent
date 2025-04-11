@@ -103,21 +103,21 @@ export default function MLAgentPage() {
         name: "main.py",
         version: "v2",
         content:
-          "# ML Pipeline v2\nimport pandas as pd\nimport numpy as np\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.impute import KNNImputer\n\ndef load_data(file_path):\n    # Load the dataset\n    df = pd.read_csv(file_path)\n    return df\n\ndef preprocess(df):\n    # Handle missing values with KNN imputation\n    numerical_cols = df.select_dtypes(include=['float64', 'int64']).columns\n    categorical_cols = df.select_dtypes(include=['object']).columns\n    \n    # Handle categorical missing values\n    for col in categorical_cols:\n        df[col] = df[col].fillna(df[col].mode()[0])\n    \n    # Handle numerical missing values with KNN\n    if len(numerical_cols) > 0:\n        imputer = KNNImputer(n_neighbors=5)\n        df[numerical_cols] = imputer.fit_transform(df[numerical_cols])\n    \n    # Normalize numerical features\n    df[numerical_cols] = (df[numerical_cols] - df[numerical_cols].mean()) / df[numerical_cols].std()\n    \n    return df\n\ndef engineer_features(df):\n    # Create interaction features\n    for col1 in df.columns[:3]:\n        for col2 in df.columns[3:6]:\n            df[f'{col1}_{col2}_interaction'] = df[col1] * df[col2]\n    \n    # Create polynomial features\n    for col in df.select_dtypes(include=['float64', 'int64']).columns:\n        df[f'{col}_squared'] = df[col] ** 2\n    \n    return df\n\ndef train_model(X, y):\n    # Split data\n    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n    \n    # Train model with optimized hyperparameters\n    model = RandomForestClassifier(n_estimators=200, max_depth=15)\n    model.fit(X_train, y_train)\n    \n    # Evaluate\n    accuracy = model.score(X_test, y_test)\n    \n    return model, accuracy\n\n# Main pipeline execution\ndef run_pipeline(data_path, target_col):\n    # Load data\n    df = load_data(data_path)\n    \n    # Preprocess\n    df_processed = preprocess(df)\n    \n    # Feature engineering\n    df_engineered = engineer_features(df_processed)\n    \n    # Split features and target\n    X = df_engineered.drop(target_col, axis=1)\n    y = df_engineered[target_col]\n    \n    # Train model\n    model, accuracy = train_model(X, y)\n    \n    print(f\"Model trained with accuracy: {accuracy:.4f}\")\n    return model, accuracy",
+          "# ML Pipeline v2\nimport pandas as pd\nimport numpy as np\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.impute import KNNImputer\n\ndef load_data(file_path):\n    # Load the dataset\n    df = pd.read_csv(file_path)\n    return df\n\ndef preprocess(df):\n    # Handle missing values with KNN imputation\n    numerical_cols = df.select_dtypes(include=['float64', 'int64']).columns\n    categorical_cols = df.select_dtypes(include(['object']).columns\n    \n    # Handle categorical missing values\n    for col in categorical_cols:\n        df[col] = df[col].fillna(df[col].mode()[0])\n    \n    # Handle numerical missing values with KNN\n    if len(numerical_cols) > 0:\n        imputer = KNNImputer(n_neighbors=5)\n        df[numerical_cols] = imputer.fit.transform(df[numerical_cols])\n    \n    # Normalize numerical features\n    df[numerical_cols] = (df[numerical_cols] - df[numerical_cols].mean()) / df[numerical_cols].std()\n    \n    return df\n\ndef engineer_features(df):\n    # Create interaction features\n    for col1 in df.columns[:3]:\n        for col2 in df.columns[3:6]:\n            df[f'{col1}_{col2}_interaction'] = df[col1] * df[col2]\n    \n    # Create polynomial features\n    for col in df.select_dtypes(include(['float64', 'int64']).columns:\n        df[f'{col}_squared'] = df[col] ** 2\n    \n    return df\n\ndef train_model(X, y):\n    # Split data\n    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n    \n    # Train model with optimized hyperparameters\n    model = RandomForestClassifier(n_estimators=200, max_depth=15)\n    model.fit(X_train, y_train)\n    \n    # Evaluate\n    accuracy = model.score(X_test, y_test)\n    \n    return model, accuracy\n\n# Main pipeline execution\ndef run_pipeline(data_path, target_col):\n    # Load data\n    df = load_data(data_path)\n    \n    # Preprocess\n    df_processed = preprocess(df)\n    \n    # Feature engineering\n    df_engineered = engineer_features(df_processed)\n    \n    # Split features and target\n    X = df_engineered.drop(target_col, axis=1)\n    y = df_engineered[target_col]\n    \n    # Train model\n    model, accuracy = train_model(X, y)\n    \n    print(f\"Model trained with accuracy: {accuracy:.4f}\")\n    return model, accuracy",
       },
       {
         id: "code-3",
         name: "main.py",
         version: "v3",
         content:
-          "# ML Pipeline v3\nimport pandas as pd\nimport numpy as np\nfrom sklearn.ensemble import GradientBoostingClassifier\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.impute import KNNImputer\nfrom sklearn.decomposition import PCA\n\ndef load_data(file_path):\n    # Load the dataset\n    df = pd.read_csv(file_path)\n    return df\n\ndef preprocess(df):\n    # Handle missing values with KNN imputation\n    numerical_cols = df.select_dtypes(include=['float64', 'int64']).columns\n    categorical_cols = df.select_dtypes(include=['object']).columns\n    \n    # Handle categorical missing values\n    for col in categorical_cols:\n        df[col] = df[col].fillna(df[col].mode()[0])\n    \n    # Handle numerical missing values with KNN\n    if len(numerical_cols) > 0:\n        imputer = KNNImputer(n_neighbors=5)\n        df[numerical_cols] = imputer.fit_transform(df[numerical_cols])\n    \n    # Normalize numerical features\n    df[numerical_cols] = (df[numerical_cols] - df[numerical_cols].mean()) / df[numerical_cols].std()\n    \n    return df\n\ndef engineer_features_advanced(df):\n    # Create interaction features\n    for col1 in df.columns[:3]:\n        for col2 in df.columns[3:6]:\n            df[f'{col1}_{col2}_interaction'] = df[col1] * df[col2]\n    \n    # Create polynomial features\n    for col in df.select_dtypes(include=['float64', 'int64']).columns[:5]:\n        df[f'{col}_squared'] = df[col] ** 2\n        df[f'{col}_cubed'] = df[col] ** 3\n    \n    # Apply PCA for dimensionality reduction\n    numerical_cols = df.select_dtypes(include=['float64', 'int64']).columns\n    if len(numerical_cols) > 10:\n        pca = PCA(n_components=10)\n        pca_result = pca.fit_transform(df[numerical_cols])\n        for i in range(10):\n            df[f'pca_{i+1}'] = pca_result[:, i]\n    \n    return df\n\ndef train_model(X, y):\n    # Split data\n    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n    \n    # Train model\n    model = GradientBoostingClassifier(n_estimators=200, learning_rate=0.1)\n    model.fit(X_train, y_train)\n    \n    # Evaluate\n    accuracy = model.score(X_test, y_test)\n    \n    return model, accuracy\n\n# Main pipeline execution\ndef run_pipeline(data_path, target_col):\n    # Load data\n    df = load_data(data_path)\n    \n    # Preprocess\n    df_processed = preprocess(df)\n    \n    # Advanced feature engineering\n    df_engineered = engineer_features_advanced(df_processed)\n    \n    # Split features and target\n    X = df_engineered.drop(target_col, axis=1)\n    y = df_engineered[target_col]\n    \n    # Train model\n    model, accuracy = train_model(X, y)\n    \n    print(f\"Model trained with accuracy: {accuracy:.4f}\")\n    return model, accuracy",
+          "# ML Pipeline v3\nimport pandas as pd\nimport numpy as np\nfrom sklearn.ensemble import GradientBoostingClassifier\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.impute import KNNImputer\nfrom sklearn.decomposition import PCA\n\ndef load_data(file_path):\n    # Load the dataset\n    df = pd.read_csv(file_path)\n    return df\n\ndef preprocess(df):\n    # Handle missing values with KNN imputation\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    categorical_cols = df.select_dtypes(include(['object']).columns\n    \n    # Handle categorical missing values\n    for col in categorical_cols:\n        df[col] = df[col].fillna(df[col].mode()[0])\n    \n    # Handle numerical missing values with KNN\n    if len(numerical_cols) > 0:\n        imputer = KNNImputer(n_neighbors=5)\n        df[numerical_cols] = imputer.fit.transform(df[numerical_cols])\n    \n    # Normalize numerical features\n    df[numerical_cols] = (df[numerical_cols] - df[numerical_cols].mean()) / df[numerical_cols].std()\n    \n    return df\n\ndef engineer_features_advanced(df):\n    # Create interaction features\n    for col1 in df.columns[:3]:\n        for col2 in df.columns[3:6]:\n            df[f'{col1}_{col2}_interaction'] = df[col1] * df[col2]\n    \n    # Create polynomial features\n    for col in df.select_dtypes(include(['float64', 'int64']).columns[:5]:\n        df[f'{col}_squared'] = df[col] ** 2\n        df[f'{col}_cubed'] = df[col] ** 3\n    \n    # Apply PCA for dimensionality reduction\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    if len(numerical_cols) > 10:\n        pca = PCA(n_components=10)\n        pca_result = pca.fit.transform(df[numerical_cols])\n        for i in range(10):\n            df[f'pca_{i+1}'] = pca_result[:, i]\n    \n    return df\n\ndef train_model(X, y):\n    # Split data\n    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n    \n    # Train model\n    model = GradientBoostingClassifier(n_estimators=200, learning_rate=0.1)\n    model.fit(X_train, y_train)\n    \n    # Evaluate\n    accuracy = model.score(X_test, y_test)\n    \n    return model, accuracy\n\n# Main pipeline execution\ndef run_pipeline(data_path, target_col):\n    # Load data\n    df = load_data(data_path)\n    \n    # Preprocess\n    df_processed = preprocess(df)\n    \n    # Advanced feature engineering\n    df_engineered = engineer_features_advanced(df_processed)\n    \n    # Split features and target\n    X = df_engineered.drop(target_col, axis=1)\n    y = df_engineered[target_col]\n    \n    # Train model\n    model, accuracy = train_model(X, y)\n    \n    print(f\"Model trained with accuracy: {accuracy:.4f}\")\n    return model, accuracy",
       },
       {
         id: "code-4",
         name: "main.py",
         version: "v4",
         content:
-          "# ML Pipeline v4\nimport pandas as pd\nimport numpy as np\nfrom sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.impute import KNNImputer\nfrom sklearn.decomposition import PCA\nfrom sklearn.feature_selection import SelectFromModel, RFE\n\ndef load_data(file_path):\n    # Load the dataset\n    df = pd.read_csv(file_path)\n    return df\n\ndef preprocess(df):\n    # Handle missing values with KNN imputation\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    categorical_cols = df.select_dtypes(include(['object']).columns\n    \n    # Handle categorical missing values\n    for col in categorical_cols:\n        df[col] = df[col].fillna(df[col].mode()[0])\n    \n    # Handle numerical missing values with KNN\n    if len(numerical_cols) > 0:\n        imputer = KNNImputer(n_neighbors=5)\n        df[numerical_cols] = imputer.fit_transform(df[numerical_cols])\n    \n    # Normalize numerical features\n    df[numerical_cols] = (df[numerical_cols] - df[numerical_cols].mean()) / df[numerical_cols].std()\n    \n    return df\n\ndef engineer_features_advanced(df):\n    # Create interaction features\n    for col1 in df.columns[:3]:\n        for col2 in df.columns[3:6]:\n            df[f'{col1}_{col2}_interaction'] = df[col1] * df[col2]\n    \n    # Create polynomial features\n    for col in df.select_dtypes(include(['float64', 'int64']).columns[:5]:\n        df[f'{col}_squared'] = df[col] ** 2\n        df[f'{col}_cubed'] = df[col] ** 3\n    \n    # Apply PCA for dimensionality reduction\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    if len(numerical_cols) > 10:\n        pca = PCA(n_components=10)\n        pca_result = pca.fit_transform(df[numerical_cols])\n        for i in range(10):\n            df[f'pca_{i+1}'] = pca_result[:, i]\n    \n    return df\n\ndef select_features(X, y):\n    # Method 1: Feature importance from Random Forest\n    rf = RandomForestClassifier(n_estimators=100)\n    rf.fit(X, y)\n    \n    # Select top features based on importance\n    sfm = SelectFromModel(rf, threshold='median')\n    X_selected = sfm.fit_transform(X, y)\n    \n    # Method 2: Recursive Feature Elimination\n    rfe = RFE(estimator=RandomForestClassifier(n_estimators=50), n_features_to_select=20)\n    X_rfe = rfe.fit_transform(X, y)\n    \n    # Get feature names\n    selected_features = X.columns[sfm.get_support()]\n    rfe_features = X.columns[rfe.get_support()]\n    \n    # Combine both methods\n    final_features = list(set(selected_features) | set(rfe_features))\n    \n    return X[final_features], final_features\n\ndef train_ensemble(X, y):\n    # Split data\n    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n    \n    # Create base models\n    rf = RandomForestClassifier(n_estimators=200, max_depth=20)\n    gb = GradientBoostingClassifier(n_estimators=200, learning_rate=0.1)\n    lr = LogisticRegression(C=0.1)\n    \n    # Create and train ensemble\n    ensemble = VotingClassifier(\n        estimators=[('rf', rf), ('gb', gb), ('lr', lr)],\n        voting='soft'\n    )\n    ensemble.fit(X_train, y_train)\n    \n    # Evaluate\n    accuracy = ensemble.score(X_test, y_test)\n    \n    return ensemble, accuracy\n\n# Main pipeline execution\ndef run_pipeline(data_path, target_col):\n    # Load data\n    df = load_data(data_path)\n    \n    # Preprocess\n    df_processed = preprocess(df)\n    \n    # Advanced feature engineering\n    df_engineered = engineer_features_advanced(df_processed)\n    \n    # Split features and target\n    X = df_engineered.drop(target_col, axis=1)\n    y = df_engineered[target_col]\n    \n    # Feature selection\n    X_selected, selected_features = select_features(X, y)\n    print(f\"Selected {len(selected_features)} features\")\n    \n    # Train ensemble model\n    model, accuracy = train_ensemble(X_selected, y)\n    \n    print(f\"Ensemble model trained with accuracy: {accuracy:.4f}\")\n    return model, accuracy",
+          "# ML Pipeline v4\nimport pandas as pd\nimport numpy as np\nfrom sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.impute import KNNImputer\nfrom sklearn.decomposition import PCA\nfrom sklearn.feature_selection import SelectFromModel, RFE\n\ndef load_data(file_path):\n    # Load the dataset\n    df = pd.read_csv(file_path)\n    return df\n\ndef preprocess(df):\n    # Handle missing values with KNN imputation\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    categorical_cols = df.select_dtypes(include(['object']).columns\n    \n    # Handle categorical missing values\n    for col in categorical_cols:\n        df[col] = df[col].fillna(df[col].mode()[0])\n    \n    # Handle numerical missing values with KNN\n    if len(numerical_cols) > 0:\n        imputer = KNNImputer(n_neighbors=5)\n        df[numerical_cols] = imputer.fit.transform(df[numerical_cols])\n    \n    # Normalize numerical features\n    df[numerical_cols] = (df[numerical_cols] - df[numerical_cols].mean()) / df[numerical_cols].std()\n    \n    return df\n\ndef engineer_features_advanced(df):\n    # Create interaction features\n    for col1 in df.columns[:3]:\n        for col2 in df.columns[3:6]:\n            df[f'{col1}_{col2}_interaction'] = df[col1] * df[col2]\n    \n    # Create polynomial features\n    for col in df.select_dtypes(include(['float64', 'int64']).columns[:5]:\n        df[f'{col}_squared'] = df[col] ** 2\n        df[f'{col}_cubed'] = df[col] ** 3\n    \n    # Apply PCA for dimensionality reduction\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    if len(numerical_cols) > 10:\n        pca = PCA(n_components=10)\n        pca_result = pca.fit.transform(df[numerical_cols])\n        for i in range(10):\n            df[f'pca_{i+1}'] = pca_result[:, i]\n    \n    return df\n\ndef select_features(X, y):\n    # Method 1: Feature importance from Random Forest\n    rf = RandomForestClassifier(n_estimators=100)\n    rf.fit(X, y)\n    \n    # Select top features based on importance\n    sfm = SelectFromModel(rf, threshold='median')\n    X_selected = sfm.fit.transform(X, y)\n    \n    # Method 2: Recursive Feature Elimination\n    rfe = RFE(estimator=RandomForestClassifier(n_estimators=50), n_features_to_select=20)\n    X_rfe = rfe.fit.transform(X, y)\n    \n    # Get feature names\n    selected_features = X.columns[sfm.get_support()]\n    rfe_features = X.columns[rfe.get_support()]\n    \n    # Combine both methods\n    final_features = list(set(selected_features) | set(rfe_features))\n    \n    return X[final_features], final_features\n\ndef train_ensemble(X, y):\n    # Split data\n    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n    \n    # Create base models\n    rf = RandomForestClassifier(n_estimators=200, max_depth=20)\n    gb = GradientBoostingClassifier(n_estimators=200, learning_rate=0.1)\n    lr = LogisticRegression(C=0.1)\n    \n    # Create and train ensemble\n    ensemble = VotingClassifier(\n        estimators=[('rf', rf), ('gb', gb), ('lr', lr)],\n        voting='soft'\n    )\n    ensemble.fit(X_train, y_train)\n    \n    # Evaluate\n    accuracy = ensemble.score(X_test, y_test)\n    \n    return ensemble, accuracy\n\n# Main pipeline execution\ndef run_pipeline(data_path, target_col):\n    # Load data\n    df = load_data(data_path)\n    \n    # Preprocess\n    df_processed = preprocess(df)\n    \n    # Advanced feature engineering\n    df_engineered = engineer_features_advanced(df_processed)\n    \n    # Split features and target\n    X = df_engineered.drop(target_col, axis=1)\n    y = df.engineered[target_col]\n    \n    # Feature selection\n    X_selected, selected_features = select_features(X, y)\n    print(f\"Selected {len(selected_features)} features\")\n    \n    # Train ensemble model\n    model, accuracy = train_ensemble(X_selected, y)\n    \n    print(f\"Ensemble model trained with accuracy: {accuracy:.4f}\")\n    return model, accuracy",
       },
     ],
     models: [
@@ -236,6 +236,7 @@ export default function MLAgentPage() {
   // Add a state to store the interval ID
   const [agentIntervalId, setAgentIntervalId] = useState<number | null>(null)
   const [currentActivityIndex, setCurrentActivityIndex] = useState<number>(-1)
+  const [eventSource, setEventSource] = useState<EventSource | null>(null)
 
   const handleSendMessage = () => {
     if (!userMessage.trim() && !readyToStart) return
@@ -425,292 +426,159 @@ export default function MLAgentPage() {
     setAvailableVersions([])
     setSelectedVersion("")
 
-    // Simulate agent activities and store the interval ID
-    const intervalId = simulateAgentActivities()
-    setAgentIntervalId(intervalId as unknown as number)
+    // Connect to the streaming updates endpoint
+    connectToEventStream()
   }
 
-  const simulateAgentActivities = () => {
-    const activities = [
-      {
-        message: "Starting ML agent for task",
-        shortDescription: "Initializing environment and loading dependencies",
-        details: `Starting ML agent for the following task: "${taskDescription}". Initializing environment and loading dependencies.`,
-        type: "info",
-        version: "v1",
-      },
-      {
-        message: "Loading and analyzing datasets",
-        shortDescription: "Found 3 numerical features and 2 categorical features with 5% missing values",
-        details:
-          "Loading datasets into memory. Performing initial analysis: checking for missing values, data types, and basic statistics. Found 3 numerical features and 2 categorical features with 5% missing values.",
-        type: "info",
-        version: "v1",
-      },
-      {
-        message: "Generating new hypothesis to improve model",
-        shortDescription: "Basic preprocessing with Random Forest classifier",
-        details:
-          "Generating hypothesis: Basic preprocessing with simple imputation and normalization, followed by Random Forest classifier with default parameters should provide a good baseline.",
-        type: "info",
-        version: "v1",
-      },
-      {
-        message: "Generating main.py pipeline code",
-        shortDescription: "Created pipeline with basic preprocessing and Random Forest model",
-        details:
-          "Generated main.py with complete pipeline code including data loading, preprocessing, and model training with Random Forest classifier.",
-        type: "code",
-        artifactId: "code-1",
-        artifactName: "main.py",
-        version: "v1",
-      },
-      {
-        message: "Running pipeline",
-        shortDescription: "Executing pipeline with basic preprocessing and Random Forest model",
-        details:
-          "Running pipeline with basic preprocessing and Random Forest model training. Using default parameters and 80/20 train/test split.",
-        type: "info",
-        version: "v1",
-      },
-      {
-        message: "Created Random Forest model (v1)",
-        shortDescription: "Model has 100 trees with 87% accuracy on validation data",
-        details:
-          "Successfully trained initial Random Forest model. Model has 100 trees and achieved 87% accuracy on validation data.",
-        type: "model",
-        artifactId: "model-1",
-        artifactName: "random_forest_v1.pkl",
-        version: "v1",
-      },
-      {
-        message: "Generated model metrics",
-        shortDescription: "Created visualization comparing model performance metrics",
-        details:
-          "Created visualization comparing model performance metrics including accuracy, precision, recall, and F1 score.",
-        type: "metrics",
-        artifactId: "metric-1",
-        artifactName: "model_metrics",
-        version: "v1",
-      },
-      {
-        message: "Generating new hypothesis to improve model",
-        shortDescription: "Enhanced preprocessing and feature engineering",
-        details:
-          "Generating hypothesis: KNN imputation for missing values and feature engineering with interaction terms should improve model performance. Optimizing Random Forest hyperparameters will further enhance results.",
-        type: "info",
-        version: "v2",
-      },
-      {
-        message: "Generating main.py pipeline code v2",
-        shortDescription: "Updated pipeline with KNN imputation and feature engineering",
-        details:
-          "Generated main.py v2 with improved pipeline including KNN imputation for missing values, feature engineering, and optimized Random Forest model.",
-        type: "code",
-        artifactId: "code-2",
-        artifactName: "main.py",
-        version: "v2",
-      },
-      {
-        message: "Running pipeline",
-        shortDescription: "Executing pipeline with enhanced preprocessing and feature engineering",
-        details:
-          "Running pipeline with KNN imputation for missing values, feature engineering, and optimized Random Forest model.",
-        type: "info",
-        version: "v2",
-      },
-      {
-        message: "Created improved Random Forest model (v2)",
-        shortDescription: "Optimized model with 200 trees, max_depth=15, 92% accuracy",
-        details:
-          "Successfully trained optimized Random Forest model with 200 trees, max_depth=15. Model achieved 92% accuracy on validation data.",
-        type: "model",
-        artifactId: "model-2",
-        artifactName: "random_forest_v2.pkl",
-        version: "v2",
-      },
-      {
-        message: "Updated model metrics",
-        shortDescription: "Added v2 model performance to metrics visualization",
-        details: "Updated visualization with v2 model performance metrics showing improvement over baseline.",
-        type: "metrics",
-        artifactId: "metric-2",
-        artifactName: "model_metrics",
-        version: "v2",
-      },
-      {
-        message: "Generating new hypothesis to improve model",
-        shortDescription: "Testing gradient boosting algorithms for better performance",
-        details:
-          "Generating hypothesis: Gradient Boosting classifier with advanced feature engineering including polynomial features and PCA should capture more complex patterns in the data.",
-        type: "info",
-        version: "v3",
-      },
-      {
-        message: "Generating main.py pipeline code v3",
-        shortDescription: "Updated pipeline with advanced features and Gradient Boosting",
-        details:
-          "Generated main.py v3 with advanced feature engineering including polynomial features, PCA, and Gradient Boosting classifier.",
-        type: "code",
-        artifactId: "code-3",
-        artifactName: "main.py",
-        version: "v3",
-      },
-      {
-        message: "Running pipeline",
-        shortDescription: "Executing pipeline with advanced features and Gradient Boosting",
-        details:
-          "Running pipeline with advanced feature engineering and Gradient Boosting classifier to improve model performance.",
-        type: "info",
-        version: "v3",
-      },
-      {
-        message: "Created Gradient Boosting model (v3)",
-        shortDescription: "Model achieved 94% accuracy, 2% improvement over v2",
-        details:
-          "Successfully trained Gradient Boosting model with 200 trees and learning rate of 0.1. Model achieved 94% accuracy on validation data.",
-        type: "model",
-        artifactId: "model-3",
-        artifactName: "gradient_boost_v3.pkl",
-        version: "v3",
-      },
-      {
-        message: "Updated model metrics",
-        shortDescription: "Added v3 model performance to metrics visualization",
-        details: "Updated visualization with v3 model performance metrics showing continued improvement.",
-        type: "metrics",
-        artifactId: "metric-3",
-        artifactName: "model_metrics",
-        version: "v3",
-      },
-      {
-        message: "Generating new hypothesis to improve model",
-        shortDescription: "Feature selection and ensemble modeling",
-        details:
-          "Generating hypothesis: Feature selection to reduce dimensionality combined with ensemble modeling that leverages multiple algorithms should provide the best performance.",
-        type: "info",
-        version: "v4",
-      },
-      {
-        message: "Generating main.py pipeline code v4",
-        shortDescription: "Created final pipeline with feature selection and ensemble model",
-        details:
-          "Generated main.py v4 with complete pipeline including feature selection and ensemble model combining Random Forest, Gradient Boosting, and Logistic Regression.",
-        type: "code",
-        artifactId: "code-4",
-        artifactName: "main.py",
-        version: "v4",
-      },
-      {
-        message: "Running pipeline",
-        shortDescription: "Executing pipeline with feature selection and ensemble modeling",
-        details:
-          "Running pipeline with feature selection techniques and ensemble modeling combining multiple algorithms.",
-        type: "info",
-        version: "v4",
-      },
-      {
-        message: "Created Ensemble model (v4)",
-        shortDescription: "Final model achieved 96% accuracy, best performance overall",
-        details:
-          "Successfully trained ensemble model combining Random Forest, Gradient Boosting, and Logistic Regression. Model achieved 96% accuracy on validation data.",
-        type: "model",
-        artifactId: "model-4",
-        artifactName: "ensemble_model_v4.pkl",
-        version: "v4",
-      },
-      {
-        message: "Updated model metrics",
-        shortDescription: "Added v4 model performance to metrics visualization",
-        details:
-          "Updated visualization with v4 model performance metrics showing the progression of improvements across all versions.",
-        type: "metrics",
-        artifactId: "metric-4",
-        artifactName: "model_metrics",
-        version: "v4",
-      },
-      {
-        message: "ML pipeline complete",
-        shortDescription: "Final ensemble model (v4) achieved 96% accuracy, 9% improvement over baseline",
-        details:
-          "Machine learning pipeline completed successfully. Final ensemble model (v4) achieved 96% accuracy, a 9% improvement over the baseline model.",
-        type: "complete",
-        version: "v4",
-      },
-    ]
+  // event mappings
+  const mappings: Record<string, string> = {
+    "DS_LOOP": "ML Agent",
+    "DS_SCENARIO": "Understanding data and requirements",
+    "RDLOOP": "Main R & D loop",
+    "CODING": "Coder agent",
+    "EXPERIMENT_GENERATION": "Generating experiment for the loop",
+    "DATA_LOADING": "Code for loading data",
+    "FEATURE_TASK": "Code for feature engineering",
+    "MODEL_TASK": "Code for hypothesized model",
+    "ENSEMBLE_TASK": "Generating ensemble model",
+    "WORKFLOW_TASK": "Developing workflow",
+    "FEEDBACK": "Gathering feedback for the loop",
+    "RECORD": "Recording results"
+  }
+  
+  const connectToEventStream = () => {
+    // Close any existing connection
+    if (eventSource) {
+      eventSource.close()
+    }
+    
+    // Create a new EventSource connection
+    const newEventSource = new EventSource('http://localhost:5000/updates/saved/thread_r4EZ1fbjwQiUmrtZUULEjh8M')
+    setEventSource(newEventSource)
 
-    let i = 0
-    const interval = setInterval(() => {
-      if (i < activities.length) {
-        const activity = {
-          id: `activity-${Date.now()}`,
-          timestamp: new Date(),
-          message: activities[i].message,
-          shortDescription: activities[i].shortDescription,
-          details: activities[i].details,
-          type: activities[i].type as any,
-          artifactId: activities[i].artifactId,
-          artifactName: activities[i].artifactName,
-          version: activities[i].version,
-          status: "done", // All previous activities are done
-        }
-
-        // Update activities with status
-        setAgentActivities((prev) => {
-          // Mark all previous activities as done
-          const updatedActivities = prev.map((act) => ({
-            ...act,
-            status: "done",
-          }))
-
-          // Add the new activity
-          return [...updatedActivities, activity]
-        })
-
-        setCurrentActivityIndex(i)
-        setProgress(Math.min(100, Math.round(((i + 1) / activities.length) * 100)))
-
-        // Update ready artifacts when an artifact is created
-        if (activity.artifactId) {
-          if (activity.artifactId.startsWith("code")) {
-            setReadyArtifacts((prev) => ({
-              ...prev,
-              code: [...prev.code, activity.artifactId!],
-            }))
-          } else if (activity.artifactId.startsWith("model")) {
-            setReadyArtifacts((prev) => ({
-              ...prev,
-              models: [...prev.models, activity.artifactId!],
-            }))
-          } else if (activity.artifactId.startsWith("metric")) {
-            setReadyArtifacts((prev) => ({
-              ...prev,
-              metrics: [...prev.metrics, activity.artifactId!],
-            }))
-          }
-        }
-
-        i++
-      } else {
-        clearInterval(interval)
-        setIsStreaming(false)
-        setCurrentActivityIndex(-1) // No current activity
+    // Set up event handlers
+    newEventSource.onmessage = (event) => {
+      try {
+        console.log(event)
+        const data = JSON.parse(event.data)
+        processAgentActivity(data)
+      } catch (error) {
+        console.error('Error parsing event data:', error)
       }
-    }, 1500) // Simulating streaming updates every 1.5 seconds
+    }
 
-    // Store interval ID so we can clear it if the user stops the agent
-    return interval
+    newEventSource.onerror = (error) => {
+      console.error('EventSource error:', error)
+      
+      // Attempt to reconnect after a delay if streaming is still active
+      if (isStreaming) {
+        setTimeout(() => {
+          if (isStreaming) {
+            console.log('Attempting to reconnect to event stream...')
+            connectToEventStream()
+          }
+        }, 3000)
+      } else {
+        newEventSource.close()
+        setEventSource(null)
+      }
+    }
   }
 
-  // Update the stopAgent function to clear the interval
+  const processAgentActivity = (data: any) => {
+    // Convert streaming data to activity format
+    console.log("activity", data)
+
+    // activity mappings
+    
+    const activity = {
+      id: data.id || `activity-${Date.now()}`,
+      timestamp: new Date(data.createdAt * 1000),
+      message: `${mappings[data.task] || data.task} : ${data.status.toLowerCase()}`,
+      shortDescription: data.shortDescription || "",
+      details: data.message || "No details provided",
+      type: data.type || "info",
+      artifactId: data.artifactId,
+      artifactName: data.artifactName,
+      version: data.version || "v1",
+      status: data.status || "done",
+    }
+
+    // Update activities state
+    setAgentActivities((prev) => {
+      // Mark all previous activities as done
+      const updatedActivities = prev.map((act) => ({
+        ...act,
+        status: "done",
+      }))
+
+      // Add the new activity
+      return [...updatedActivities, activity]
+    })
+
+    // Update current activity index
+    setCurrentActivityIndex((prev) => prev + 1)
+    
+    // Calculate progress (approximation since we don't know total number)
+    // You may need to adjust this based on your specific use case
+    setProgress((prevProgress) => Math.min(100, prevProgress + 5))
+
+    // Update ready artifacts when an artifact is created
+    if (activity.artifactId) {
+      if (activity.artifactId.startsWith("code")) {
+        setReadyArtifacts((prev) => ({
+          ...prev,
+          code: [...prev.code, activity.artifactId!],
+        }))
+      } else if (activity.artifactId.startsWith("model")) {
+        setReadyArtifacts((prev) => ({
+          ...prev,
+          models: [...prev.models, activity.artifactId!],
+        }))
+      } else if (activity.artifactId.startsWith("metric")) {
+        setReadyArtifacts((prev) => ({
+          ...prev,
+          metrics: [...prev.metrics, activity.artifactId!],
+        }))
+      }
+    }
+
+    // If the message indicates completion, end the streaming
+    if (activity.type === "complete") {
+      setIsStreaming(false)
+      setCurrentActivityIndex(-1)
+      if (eventSource) {
+        eventSource.close()
+        setEventSource(null)
+      }
+    }
+  }
+
   const stopAgent = () => {
+    // Close the EventSource connection
+    if (eventSource) {
+      eventSource.close()
+      setEventSource(null)
+    }
+    
+    // Clean up any existing interval
     if (agentIntervalId) {
       clearInterval(agentIntervalId)
       setAgentIntervalId(null)
     }
+    
     setIsStreaming(false)
     setCurrentActivityIndex(-1)
   }
+
+  // Clean up EventSource on component unmount
+  useEffect(() => {
+    return () => {
+      if (eventSource) {
+        eventSource.close()
+      }
+    }
+  }, [eventSource])
 
   // Modify the getFilteredArtifacts function to only return ready artifacts
   const getFilteredArtifacts = (type: "code" | "models" | "metrics") => {
