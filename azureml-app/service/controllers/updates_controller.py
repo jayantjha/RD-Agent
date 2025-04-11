@@ -20,7 +20,8 @@ async def event_stream():
 async def event_saved_stream(messages: list):
     for msg in messages:
         await asyncio.sleep(1)
-        yield f"data: {msg}\n\n"
+        msg_str = json.dumps(msg)
+        yield f"data: {msg_str}\n\n"
 
 @router.get("/updates/{thread_id}")
 async def get_updates(thread_id: str):
