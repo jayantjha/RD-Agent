@@ -88,25 +88,39 @@ class DataScienceV2RDLoop(DataScienceRDLoop):
         if hasattr(exp, 'experiment_workspace') and exp.experiment_workspace and exp.experiment_workspace.workspace_path.exists():
             manifest.workspace_path = str(exp.experiment_workspace.workspace_path.relative_to(DS_RD_SETTING.session_path))
             manifest.files = [File(name=f.name, path=str(f.relative_to(DS_RD_SETTING.session_path).parent), size=f.stat().st_size) for f in exp.experiment_workspace.workspace_path.iterdir() if f.is_file()]
+            
             model_path = exp.experiment_workspace.workspace_path / "models"
             if model_path.exists():
-                manifest.model = Model(name="model", size=model_path.stat().st_size)
-                manifest.model.files = [File(name=f.name, path=str(f.relative_to(DS_RD_SETTING.session_path).parent), size=f.stat().st_size) for f in model_path.iterdir() if f.is_file()]
-            logger.storage.log(manifest, f"Loop_{self.loop_idx}", "json", file_name=f"manifest.json")
+                model_files = [File(name=f.name, path=str(f.relative_to(DS_RD_SETTING.session_path).parent), size=f.stat().st_size) for f in model_path.iterdir() if f.is_file()]
+                manifest.model = Model(
+                    name="model",
+                    files=model_files,
+                    size=sum(file.size for file in model_files)
+                )
+            self._log_object(manifest, "manifest", step_name)
+            self._log_object(manifest, "manifest", step_name, Path(DS_RD_SETTING.session_path) / "log" / f"Loop_{self.loop_idx}")
+
 
     def _write_experiment_data(self, exp, step_name):
         if not DS_RD_SETTING.log_experiment:
             return
-        exp_file_path = Path(DS_RD_SETTING.session_path) / "log" / f"Loop_{self.loop_idx}"/ f"{step_name}" / f"experiment.json"
-        with exp_file_path.open("w") as f:   
+        self._log_object(exp, "experiment", step_name)
+        
+
+    def _log_object(self, obj:object, name:str, step_name:str, path:Optional[Path]=None):
+        if path is None:
+            path = Path(DS_RD_SETTING.session_path) / "log" / f"Loop_{self.loop_idx}"/ f"{step_name}" / f"{name}.json"
+        else:
+            path = path / f"{name}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("w") as f:   
             try:
-                if isinstance(exp, BaseModel):
-                    f.write(exp.model_dump_json())
+                if isinstance(obj, BaseModel):
+                    f.write(obj.model_dump_json())
                 else:
-                    f.write(jsonpickle.encode(exp, unpicklable=True))
+                    f.write(jsonpickle.encode(obj, unpicklable=True))
             except TypeError:
-                logger.error(f"Error in logging experiment: {exp}")
-           
+                logger.error(f"Error in logging object: {name} with type {type(obj)}")
         
 
 class FolderWatcher(FileSystemEventHandler):
@@ -145,7 +159,7 @@ class FolderWatcher(FileSystemEventHandler):
                 )
                 logger.info(f"Uploaded {file_path} to blob storage as {blob_name} with content type {content_type}")
         except Exception as e:
-            logger.error(f"Failed to upload {file_path} to blob storage: {e}")
+           return
 
 def watch_daemon(session_id):
     if not DS_RD_SETTING.upload_logs_to_storage:
