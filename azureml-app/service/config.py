@@ -29,18 +29,24 @@ COMMAND_EXECUTE = (
     "unzip kaggle_data.zip -d git_ignore_folder/kaggle_data && "
     "source activate kaggle && "
     "dotenv set KG_LOCAL_DATA_PATH \"$(pwd)/git_ignore_folder/kaggle_data\" && "
-    "dotenv run -- python -m rdagent.app.data_science.loop --competition sf-crime"
+    "dotenv set DS_SESSION_ROOT_PATH \"$(pwd)/rdagent/sessions\" && "
+    "dotenv run -- python -m rdagent.app.data_science_msft.loop --competition playground-series-s4e9"
 )
 
 ENV_VARS = {
-    # "USE_AZURE": "True",
-    # "EMBEDDING_OPENAI_API_KEY": "",# Replace with the right key
-    # "EMBEDDING_AZURE_API_BASE":"",# Replace with the corresponding base,
-    # "EMBEDDING_AZURE_API_VERSION": "2023-05-15",
-    # "EMBEDDING_MODEL": "text-embedding-3-small",
-    # "CHAT_OPENAI_API_KEY": "",# Replace with the right key
-    # "CHAT_AZURE_API_BASE": "",# Replace with the corresponding base,
-    # "CHAT_AZURE_API_VERSION": "2025-01-01-preview",
-    # "CHAT_MODEL": "gpt-4o",
-    # "DS_CODER_COSTEER_ENV_TYPE": "conda"
+    "USE_AZURE": "True",
+    "EMBEDDING_OPENAI_API_KEY": "",
+    "EMBEDDING_AZURE_API_BASE": "https://ai-pritamdagenthub298066461577.openai.azure.com",
+    "EMBEDDING_AZURE_API_VERSION": "2023-05-15",
+    "EMBEDDING_MODEL": "text-embedding-3-small",
+    "CHAT_OPENAI_API_KEY": "",
+    "CHAT_AZURE_API_BASE": "https://ai-pritamdagenthub298066461577.openai.azure.com",
+    "CHAT_AZURE_API_VERSION": "2025-01-01-preview",
+    "CHAT_MODEL": "o3-mini",
+    "DS_CODER_COSTEER_ENV_TYPE": "conda",
+    "DS_USE_MLE_BENCHMARK": False,
+    "DS_ENABLE_MODEL_DUMP": True,
+    "DS_CODER_ON_WHOLE_PIPELINE": True,
+    "DS_IF_USING_MLE_DATA": False,
+    "DS_ENABLE_DOC_DEV": True
 }

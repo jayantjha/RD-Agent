@@ -22,23 +22,20 @@ import {
   Send,
   ChevronUp,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { TabsList, TabsTrigger, Tabs, TabsContent } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+
+// Import ML Agent components
+import { AgentProgress } from "@/components/ml-agent/AgentProgress"
+import { AgentHeader } from "@/components/ml-agent/AgentHeader"
+import { AgentArtifacts } from "@/components/ml-agent/AgentArtifacts"
+import { ChatUI } from "@/components/ml-agent/ChatUI"
+import { MetricsChart } from "@/components/ml-agent/metrics-chart"
 
 export default function MLAgentPage() {
   const [userMessage, setUserMessage] = useState("")
-  const [expandedTaskDescription, setExpandedTaskDescription] = useState(false)
   const [files, setFiles] = useState<File[]>([])
   const [isAgentRunning, setIsAgentRunning] = useState(false)
+  const [isStreaming, setIsStreaming] = useState(false)
   const [selectedCodeFile, setSelectedCodeFile] = useState("")
   const [selectedVersion, setSelectedVersion] = useState("")
   const [expandedActivities, setExpandedActivities] = useState<Record<string, boolean>>({})
@@ -54,7 +51,7 @@ export default function MLAgentPage() {
   const [highlightedArtifact, setHighlightedArtifact] = useState<string | null>(null)
   const artifactRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
   const activityStreamEndRef = useRef<HTMLDivElement>(null)
-  const [isStreaming, setIsStreaming] = useState(false)
+
   const chartRef = useRef<SVGSVGElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -152,25 +149,25 @@ export default function MLAgentPage() {
   }, [messages])
 
   // Scroll to highlighted artifact
-  useEffect(() => {
-    if (highlightedArtifact && artifactRefs.current[highlightedArtifact]) {
-      artifactRefs.current[highlightedArtifact]?.scrollIntoView({ behavior: "smooth", block: "center" })
+  // useEffect(() => {
+  //   if (highlightedArtifact && artifactRefs.current[highlightedArtifact]) {
+  //     artifactRefs.current[highlightedArtifact]?.scrollIntoView({ behavior: "smooth", block: "center" })
 
-      // Flash effect
-      const element = artifactRefs.current[highlightedArtifact]
-      element?.classList.add("bg-azure-blue-10")
-      setTimeout(() => {
-        element?.classList.remove("bg-azure-blue-10")
-      }, 2000)
-    }
-  }, [highlightedArtifact])
+  //     // Flash effect - using bg-blue-100 instead of bg-azure-blue-10 which may not exist in default Tailwind
+  //     const element = artifactRefs.current[highlightedArtifact]
+  //     element?.classList.add("bg-blue-100")
+  //     setTimeout(() => {
+  //       element?.classList.remove("bg-blue-100")
+  //     }, 2000)
+  //   }
+  // }, [highlightedArtifact])
 
   // Auto-scroll to the bottom of the activity stream when new activities are added
-  useEffect(() => {
-    if (agentActivities.length > 0 && isStreaming) {
-      activityStreamEndRef.current?.scrollIntoView({ behavior: "smooth" })
-    }
-  }, [agentActivities, isStreaming])
+  // useEffect(() => {
+  //   if (agentActivities.length > 0 && isStreaming) {
+  //     activityStreamEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  //   }
+  // }, [agentActivities, isStreaming])
 
   // Set initial code file when artifacts change or version changes
   useEffect(() => {
@@ -185,35 +182,42 @@ export default function MLAgentPage() {
   // Update available versions when ready artifacts change
   useEffect(() => {
     const versions = new Set<string>()
+    // test code
+    versions.add ("0");
+    versions.add ("1");
+    console.log(Array.from(versions));
+    setAvailableVersions(Array.from(versions))
 
     // Add versions from ready artifacts
-    readyArtifacts.code.forEach((id) => {
-      const artifact = artifacts.code.find((a) => a.id === id)
-      if (artifact) versions.add(artifact.version)
-    })
+    // readyArtifacts.code.forEach((id) => {
+    //   const artifact = artifacts.code.find((a) => a.id === id)
+    //   if (artifact) versions.add(artifact.version)
+    // })
 
-    readyArtifacts.models.forEach((id) => {
-      const artifact = artifacts.models.find((a) => a.id === id)
-      if (artifact) versions.add(artifact.version)
-    })
+    // readyArtifacts.models.forEach((id) => {
+    //   const artifact = artifacts.models.find((a) => a.id === id)
+    //   if (artifact) versions.add(artifact.version)
+    // })
 
-    readyArtifacts.metrics.forEach((id) => {
-      const artifact = artifacts.metrics.find((a) => a.id === id)
-      if (artifact) versions.add(artifact.version)
-    })
+    // readyArtifacts.metrics.forEach((id) => {
+    //   const artifact = artifacts.metrics.find((a) => a.id === id)
+    //   if (artifact) versions.add(artifact.version)
+    // })
 
-    const sortedVersions = Array.from(versions).sort((a, b) => {
-      // Sort by version number (v1, v2, v3, v4)
-      return a.localeCompare(b, undefined, { numeric: true })
-    })
+    // const sortedVersions = Array.from(versions).sort((a, b) => {
+    //   // Sort by version number (v1, v2, v3, v4)
+    //   return a.localeCompare(b, undefined, { numeric: true })
+    // })
 
-    setAvailableVersions(sortedVersions)
+    // setAvailableVersions(sortedVersions)
 
-    // Always set selected version to the latest available
-    if (sortedVersions.length > 0) {
-      setSelectedVersion(sortedVersions[sortedVersions.length - 1])
-    }
-  }, [readyArtifacts, artifacts])
+    // // Always set selected version to the latest available
+    // if (sortedVersions.length > 0) {
+    //   setSelectedVersion(sortedVersions[sortedVersions.length - 1])
+    // }
+
+    // readyArtifacts, artifacts
+  }, [isAgentRunning])
 
   // Update metrics data when a new metric is added
   useEffect(() => {
@@ -351,7 +355,13 @@ export default function MLAgentPage() {
         const message = conversation[step]
 
         // Add message to chat
-        setMessages((prev) => [...prev, message])
+        setMessages((prev) => [
+          ...prev,
+          {
+            ...message,
+            role: message.role as "user" | "agent", // Ensure role is explicitly typed
+          },
+        ])
 
         // If this is the file upload message, add the file
         if (message.showFiles) {
@@ -389,7 +399,8 @@ export default function MLAgentPage() {
     // Start with a slight delay to allow the UI to render
     const timer = setTimeout(() => {
       simulateConversation()
-    }, 1000)
+    }, 100)
+    // 1000
 
     return () => clearTimeout(timer)
   }, [])
@@ -418,6 +429,22 @@ export default function MLAgentPage() {
     // Connect to the streaming updates endpoint
     connectToEventStream()
   }
+
+  // event mappings
+  const mappings: Record<string, string> = {
+    "DS_LOOP": "ML Agent",
+    "DS_SCENARIO": "Understanding data and requirements",
+    "RDLOOP": "Main R & D loop",
+    "CODING": "Coder agent",
+    "EXPERIMENT_GENERATION": "Generating experiment for the loop",
+    "DATA_LOADING": "Code for loading data",
+    "FEATURE_TASK": "Code for feature engineering",
+    "MODEL_TASK": "Code for hypothesized model",
+    "ENSEMBLE_TASK": "Generating ensemble model",
+    "WORKFLOW_TASK": "Developing workflow",
+    "FEEDBACK": "Gathering feedback for the loop",
+    "RECORD": "Recording results"
+  }
   
   const connectToEventStream = () => {
     // Close any existing connection
@@ -426,12 +453,13 @@ export default function MLAgentPage() {
     }
     
     // Create a new EventSource connection
-    const newEventSource = new EventSource('http://localhost:5000/updates')
+    const newEventSource = new EventSource('http://localhost:5000/updates/saved/thread_r4EZ1fbjwQiUmrtZUULEjh8M')
     setEventSource(newEventSource)
 
     // Set up event handlers
     newEventSource.onmessage = (event) => {
       try {
+        console.log(event)
         const data = JSON.parse(event.data)
         processAgentActivity(data)
       } catch (error) {
@@ -466,7 +494,7 @@ export default function MLAgentPage() {
     const activity = {
       id: data.id || `activity-${Date.now()}`,
       timestamp: new Date(data.createdAt * 1000),
-      message: `${data.task} : ${data.status}`,
+      message: `${mappings[data.task] || data.task} : ${data.status.toLowerCase()}`,
       shortDescription: data.shortDescription || "",
       details: data.message || "No details provided",
       type: data.type || "info",
@@ -636,113 +664,12 @@ export default function MLAgentPage() {
 
   // Function to render the metrics chart
   const renderMetricsChart = (accuracies: number[]) => {
-    const versions = Array.from({ length: accuracies.length }, (_, i) => `v${i + 1}`)
-
-    // Calculate chart dimensions - make it responsive but smaller
-    const chartWidth = 100 // percentage
-    const chartHeight = 140 // reduced height
-    const padding = 25
-    const availableWidth = chartHeight * 1.8 - padding * 2
-    const availableHeight = chartHeight - padding * 2
-
-    // Calculate scales
-    const xStep = availableWidth / (versions.length - 1 || 1)
-    const maxAccuracy = Math.max(...accuracies, 1)
-    const yScale = availableHeight / maxAccuracy
-
-    // Generate points for the line
-    let points = ""
-    accuracies.forEach((acc, i) => {
-      const x = padding + i * xStep
-      const y = chartHeight - padding - acc * yScale
-      points += `${x},${y} `
-    })
-
-    return (
-      <div className="w-full overflow-hidden">
-        <svg
-          ref={chartRef}
-          width="100%"
-          height={chartHeight}
-          className="w-full h-auto"
-          viewBox={`0 0 ${chartHeight * 1.8} ${chartHeight}`}
-          preserveAspectRatio="xMidYMid meet"
-        >
-          {/* X and Y axes */}
-          <line
-            x1={padding}
-            y1={chartHeight - padding}
-            x2={chartHeight * 1.8 - padding}
-            y2={chartHeight - padding}
-            stroke="#888"
-            strokeWidth="1"
-          />
-          <line x1={padding} y1={padding} x2={padding} y2={chartHeight - padding} stroke="#888" strokeWidth="1" />
-
-          {/* X axis labels */}
-          {versions.map((version, i) => (
-            <text
-              key={version}
-              x={padding + i * xStep}
-              y={chartHeight - padding + 15}
-              textAnchor="middle"
-              fontSize="4.5"
-              fill="currentColor"
-            >
-              {version}
-            </text>
-          ))}
-
-          {/* Y axis labels */}
-          <text x={padding - 8} y={padding} textAnchor="end" fontSize="4.5" fill="currentColor">
-            1.0
-          </text>
-          <text x={padding - 8} y={chartHeight - padding} textAnchor="end" fontSize="4.5" fill="currentColor">
-            0.0
-          </text>
-          <text
-            x={padding - 8}
-            y={(chartHeight - padding + padding) / 2}
-            textAnchor="end"
-            fontSize="4.5"
-            fill="currentColor"
-          >
-            0.5
-          </text>
-
-          {/* Data points */}
-          {accuracies.map((acc, i) => (
-            <circle
-              key={i}
-              cx={padding + i * xStep}
-              cy={chartHeight - padding - acc * yScale}
-              r="3"
-              className="fill-azure-blue"
-            />
-          ))}
-
-          {/* Line connecting points */}
-          <polyline points={points} fill="none" stroke="#0078d4" strokeWidth="2" />
-
-          {/* Accuracy labels */}
-          {accuracies.map((acc, i) => (
-            <text
-              key={i}
-              x={padding + i * xStep}
-              y={chartHeight - padding - acc * yScale - 8}
-              textAnchor="middle"
-              fontSize="4.5"
-              fill="currentColor"
-            >
-              {acc.toFixed(2)}
-            </text>
-          ))}
-        </svg>
-      </div>
-    )
+    // Use the MetricsChart component instead of inline SVG
+    return <MetricsChart accuracies={accuracies} chartRef={chartRef} />
   }
 
   // Setup form when agent is not running
+  // !isAgentRunning
   if (!isAgentRunning) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white">
@@ -755,94 +682,19 @@ export default function MLAgentPage() {
             <h1 className="text-3xl font-semibold text-gray-800 text-center">How can I help you today?</h1>
           </div>
 
-          <div className="w-full">
-            <div className="space-y-6 mb-8">
-              {messages.map((message, index) => (
-                <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                  {message.role === "agent" && (
-                    <div className="flex h-8 w-8 shrink-0 mr-2">
-                      <Avatar>
-                        <AvatarFallback className="bg-azure-blue text-white">ML</AvatarFallback>
-                      </Avatar>
-                    </div>
-                  )}
-                  <div
-                    className={`max-w-[80%] rounded-lg p-4 ${
-                      message.role === "user" ? "bg-azure-blue text-white" : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    <div className="whitespace-pre-line">{message.content}</div>
-                    {message.role === "user" && message.showFiles && files.length > 0 && (
-                      <div className="mt-2 bg-white/20 rounded p-2 text-white flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        <span>
-                          {files[0].name} ({(files[0].size / 1024).toFixed(1)} KB)
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {readyToStart && (
-                <div className="flex justify-center gap-4 mt-6 mb-6">
-                  <Button
-                    variant="outline"
-                    className="border-azure-blue text-azure-blue hover:bg-azure-blue-5"
-                    onClick={() => {
-                      setReadyToStart(false)
-                      setUserMessage("")
-                    }}
-                  >
-                    Continue Chat
-                  </Button>
-                  <Button
-                    className="bg-azure-blue text-white hover:bg-azure-dark-blue"
-                    onClick={() => handleSendMessage()}
-                  >
-                    Start Agent Run
-                  </Button>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {!readyToStart && (
-              <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
-                <Input
-                  placeholder="Chat with your agent..."
-                  value={userMessage}
-                  onChange={(e) => setUserMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSendMessage()
-                    }
-                  }}
-                  className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => document.getElementById("datasets")?.click()}
-                  className="text-gray-500 hover:text-azure-blue hover:bg-transparent"
-                >
-                  <Paperclip className="h-5 w-5" />
-                  <span className="sr-only">Attach file</span>
-                </Button>
-                <Input id="datasets" type="file" multiple onChange={handleFileChange} className="hidden" />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleSendMessage}
-                  disabled={!userMessage.trim()}
-                  className="text-gray-500 hover:text-azure-blue hover:bg-transparent"
-                >
-                  <Send className="h-5 w-5" />
-                  <span className="sr-only">Send message</span>
-                </Button>
-              </div>
-            )}
-          </div>
+          <ChatUI 
+            messages={messages}
+            userMessage={userMessage}
+            setUserMessage={setUserMessage}
+            handleSendMessage={handleSendMessage}
+            handleFileChange={handleFileChange}
+            files={files}
+            readyToStart={readyToStart}
+            startAgent={startAgent} // Add missing prop
+            messagesEndRef={messagesEndRef as React.RefObject<HTMLDivElement>}
+            setReadyToStart={function (ready: boolean): void {
+              throw new Error("Function not implemented.")
+            } }          />
         </div>
       </div>
     )
@@ -852,69 +704,13 @@ export default function MLAgentPage() {
   return (
     <div className="flex flex-col h-screen bg-[#f9f9f9]">
       {/* Header with task summary */}
-      <header className="border-b border-azure-border bg-white py-3 px-4 shadow-sm">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="max-w-2xl">
-              <h1 className="text-xl font-semibold text-azure-dark-blue">ML Agent</h1>
-              <Collapsible>
-                <div className="flex items-center gap-2">
-                  <p className={`text-sm text-gray-600 mt-1 ${!expandedTaskDescription ? "line-clamp-2" : ""}`}>
-                    {taskDescription}
-                  </p>
-                  {taskDescription.length > 80 && (
-                    <CollapsibleTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 text-azure-blue flex-shrink-0"
-                        onClick={() => setExpandedTaskDescription(!expandedTaskDescription)}
-                      >
-                        {expandedTaskDescription ? (
-                          <ChevronUp className="h-3 w-3" />
-                        ) : (
-                          <ChevronDown className="h-3 w-3" />
-                        )}
-                      </Button>
-                    </CollapsibleTrigger>
-                  )}
-                </div>
-                <CollapsibleContent>
-                  <p className="text-sm text-gray-600 mt-1">{taskDescription}</p>
-                </CollapsibleContent>
-              </Collapsible>
-            </div>
-
-            <div className="flex items-center gap-4 hidden-view">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Datasets:</span>
-                <Badge className="bg-azure-gray text-gray-700 font-normal">{files.length} files</Badge>
-              </div>
-
-              <Separator orientation="vertical" className="h-6 bg-azure-border" />
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Progress:</span>
-                <div className="w-24 h-2 bg-azure-gray rounded-full overflow-hidden">
-                  <div className="h-full bg-azure-blue" style={{ width: `${progress}%` }}></div>
-                </div>
-                <span className="text-sm font-medium text-gray-700">{progress}%</span>
-              </div>
-
-              {isStreaming && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={stopAgent}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  Stop Agent
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <AgentHeader 
+        taskDescription={taskDescription}
+        filesCount={files.length}
+        progress={progress}
+        isStreaming={isStreaming}
+        stopAgent={stopAgent}
+      />
 
       {/* Main content area with split panes */}
       <div className="flex-1 overflow-hidden">
@@ -922,363 +718,36 @@ export default function MLAgentPage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-full">
             {/* Left pane: Agent progress */}
             <div className="flex flex-col h-full md:col-span-5">
-              <Card className="flex-1 flex flex-col border-azure-border shadow-sm">
-                <CardHeader className="border-b border-azure-border bg-white pb-3">
-                  <CardTitle className="text-lg font-semibold text-azure-dark-blue">Agent Activity</CardTitle>
-                  <CardDescription className="text-gray-600">
-                    Live stream of the agent's actions and progress
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1 overflow-hidden bg-white p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-gray-700">Activity Stream</h3>
-                    <Badge className="bg-azure-gray text-gray-700 font-normal flex items-center gap-1">
-                      {isStreaming ? (
-                        <>
-                          <Loader2 className="h-3 w-3 animate-spin text-azure-blue" />
-                          <span>Streaming</span>
-                        </>
-                      ) : (
-                        <>
-                          <Clock className="h-3 w-3" />
-                          <span>Complete</span>
-                        </>
-                      )}
-                    </Badge>
-                  </div>
-                  <ScrollArea className="h-[calc(100vh-240px)]">
-                    <div className="space-y-3 p-1">
-                      {agentActivities.map((activity, index) => (
-                        <div
-                          key={activity.id}
-                          className={`group border border-azure-border rounded-md p-3 hover:bg-azure-gray/30 transition-colors cursor-pointer bg-white ${
-                            isStreaming && index === currentActivityIndex ? "border-azure-blue" : ""
-                          }`}
-                          onClick={() => toggleActivityExpand(activity.id)}
-                        >
-                          <div className="flex gap-3">
-                            <div
-                              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                                isStreaming && index === currentActivityIndex
-                                  ? "bg-azure-blue/10"
-                                  : activity.status === "done"
-                                    ? "bg-green-50"
-                                    : activity.status === "failed"
-                                      ? "bg-red-50"
-                                      : "bg-azure-gray"
-                              }`}
-                            >
-                              {getActivityIcon(activity.type, activity.status, index)}
-                            </div>
-                            <div className="flex flex-col gap-1 flex-1">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-sm font-medium text-gray-800">{activity.message}</p>
-                                    <Badge className="bg-azure-gray text-gray-700 text-xs font-normal">
-                                      {activity.version}
-                                    </Badge>
-
-                                    {/* Artifact link as text */}
-                                    {activity.artifactId && (
-                                      <span
-                                        className="text-xs text-azure-blue hover:underline cursor-pointer"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleArtifactLink(activity.artifactId, activity.version)
-                                        }}
-                                      >
-                                        {activity.artifactName}
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  {/* Short description always visible */}
-                                  <p className="text-sm text-gray-600 mt-1">{activity.shortDescription}</p>
-
-                                  {/* Expandable details */}
-                                  <Collapsible
-                                    open={expandedActivities[activity.id]}
-                                    onOpenChange={() => toggleActivityExpand(activity.id)}
-                                  >
-                                    <CollapsibleContent className="mt-2 pt-2 border-t border-azure-border">
-                                      <p className="text-sm text-gray-700">{activity.details}</p>
-                                    </CollapsibleContent>
-                                  </Collapsible>
-                                </div>
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1">{activity.timestamp.toLocaleTimeString()}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-
-                      {/* Streaming indicator at the end */}
-                      {isStreaming && (
-                        <div className="flex items-center justify-center py-2">
-                          <Loader2 className="h-5 w-5 text-azure-blue animate-spin mr-2" />
-                          <span className="text-sm text-gray-700">Agent is processing...</span>
-                        </div>
-                      )}
-
-                      {/* Invisible div for auto-scrolling */}
-                      <div ref={activityStreamEndRef} />
-                    </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
+              <AgentProgress 
+                startAgent={startAgent}
+                agentActivities={agentActivities}
+                isStreaming={isStreaming}
+                currentActivityIndex={currentActivityIndex}
+                expandedActivities={expandedActivities}
+                toggleActivityExpand={toggleActivityExpand}
+                // getActivityIcon={getActivityIcon}
+                handleArtifactLink={handleArtifactLink}
+                activityStreamEndRef={activityStreamEndRef as React.RefObject<HTMLDivElement>}
+              />   
             </div>
-
             {/* Right pane: Artifacts */}
             <div className="flex flex-col h-full md:col-span-7">
-              <div>WORK IN PROGRESS</div>
-              <Card className="flex-1 flex flex-col border-azure-border shadow-sm hidden-view">
-                <CardHeader className="border-b border-azure-border bg-white pb-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg font-semibold text-azure-dark-blue">ML Artifacts</CardTitle>
-                      <CardDescription className="text-gray-600">
-                        Code, models, and metrics generated by the agent
-                      </CardDescription>
-                    </div>
-
-                    {/* Version selector - only show when versions are available */}
-                    {availableVersions.length > 0 && (
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor="version-select" className="text-sm text-gray-600">
-                          Version:
-                        </Label>
-                        <Select value={selectedVersion} onValueChange={setSelectedVersion}>
-                          <SelectTrigger id="version-select" className="w-24 border-azure-border text-gray-700">
-                            <SelectValue placeholder="Select version" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableVersions.map((version) => (
-                              <SelectItem key={version} value={version}>
-                                {version}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-1 overflow-auto bg-white p-4">
-                  <ScrollArea className="h-[calc(100vh-240px)]">
-                    <div className="space-y-6 pr-2">
-                      {/* Models */}
-                      <Collapsible
-                        open={openSections.models}
-                        onOpenChange={() => toggleSection("models")}
-                        className="transition-all"
-                      >
-                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md hover:bg-azure-gray/50">
-                          <div className="flex items-center gap-2">
-                            <Database className="h-5 w-5 text-azure-blue" />
-                            <h3 className="text-sm font-medium text-gray-700">Models</h3>
-                          </div>
-                          {openSections.models ? (
-                            <ChevronDown className="h-4 w-4 text-gray-500" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4 text-gray-500" />
-                          )}
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="pt-2">
-                          <div className="space-y-4">
-                            {getFilteredArtifacts("models").length > 0 ? (
-                              getFilteredArtifacts("models").map((model) => (
-                                <Card
-                                  key={model.id}
-                                  ref={(el) => (artifactRefs.current[model.id] = el)}
-                                  className="transition-all duration-300 border-azure-border shadow-sm"
-                                >
-                                  <CardHeader className="py-3 bg-white">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center gap-2">
-                                        <CardTitle className="text-base font-medium text-gray-800">
-                                          {model.name}
-                                        </CardTitle>
-                                        <Badge className="bg-azure-gray text-gray-700 text-xs font-normal">
-                                          {model.version}
-                                        </Badge>
-                                      </div>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="border-azure-blue text-azure-blue hover:bg-azure-blue-5"
-                                      >
-                                        <Rocket className="h-3 w-3 mr-1" />
-                                        Deploy
-                                      </Button>
-                                    </div>
-                                  </CardHeader>
-                                  <CardContent className="py-2 bg-azure-gray/10">
-                                    <div className="grid grid-cols-2 gap-2 text-sm">
-                                      <div>
-                                        <span className="text-gray-600">Size:</span>{" "}
-                                        <span className="text-gray-800">{model.size}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-gray-600">Accuracy:</span>{" "}
-                                        <span className="text-gray-800">{model.accuracy.toFixed(2)}</span>
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))
-                            ) : (
-                              <div className="text-center p-6 text-gray-500 bg-azure-gray/20 rounded-md border border-azure-border flex flex-col items-center">
-                                <Shield className="h-12 w-12 text-azure-blue/30 mb-2" />
-                                <p>No models available yet</p>
-                              </div>
-                            )}
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-
-                      {/* Metrics */}
-                      <Collapsible
-                        open={openSections.metrics}
-                        onOpenChange={() => toggleSection("metrics")}
-                        className="transition-all"
-                      >
-                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md hover:bg-azure-gray/50">
-                          <div className="flex items-center gap-2">
-                            <BarChart3 className="h-5 w-5 text-azure-blue" />
-                            <h3 className="text-sm font-medium text-gray-700">Metrics</h3>
-                          </div>
-                          {openSections.metrics ? (
-                            <ChevronDown className="h-4 w-4 text-gray-500" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4 text-gray-500" />
-                          )}
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="pt-2">
-                          <div className="space-y-4">
-                            {currentMetricData.length > 0 ? (
-                              <div
-                                className="border border-azure-border rounded-md p-4 transition-all duration-300 bg-white"
-                                ref={(el) => {
-                                  const metric = getLatestMetric()
-                                  if (metric) artifactRefs.current[metric.id] = el
-                                }}
-                              >
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="flex items-center gap-2">
-                                    <h3 className="text-sm font-medium text-gray-800">Model Performance</h3>
-                                    <Badge className="bg-azure-gray text-gray-700 text-xs font-normal">
-                                      {selectedVersion}
-                                    </Badge>
-                                  </div>
-                                </div>
-
-                                {/* Render the metrics chart with the current data */}
-                                {renderMetricsChart(currentMetricData)}
-
-                                <div className="mt-2 text-xs text-center text-gray-500">
-                                  Model accuracy comparison across versions
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="text-center p-6 text-gray-500 bg-azure-gray/20 rounded-md border border-azure-border flex flex-col items-center">
-                                <BarChart3 className="h-12 w-12 text-azure-blue/30 mb-2" />
-                                <p>No metrics available yet</p>
-                              </div>
-                            )}
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-
-                      {/* Code Files */}
-                      <Collapsible
-                        open={openSections.code}
-                        onOpenChange={() => toggleSection("code")}
-                        className="transition-all"
-                      >
-                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-md hover:bg-azure-gray/50">
-                          <div className="flex items-center gap-2">
-                            <FileCode className="h-5 w-5 text-azure-blue" />
-                            <h3 className="text-sm font-medium text-gray-700">Code Files</h3>
-                          </div>
-                          {openSections.code ? (
-                            <ChevronDown className="h-4 w-4 text-gray-500" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4 text-gray-500" />
-                          )}
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="pt-2">
-                          <div
-                            className="transition-all duration-300"
-                            ref={(el) => (artifactRefs.current["code-section"] = el)}
-                          >
-                            {getFilteredArtifacts("code").length > 0 ? (
-                              <div className="mb-4 border border-azure-border rounded-md shadow-sm">
-                                <Tabs value={selectedCodeFile} onValueChange={setSelectedCodeFile}>
-                                  <div className="border-b border-azure-border bg-azure-gray/30 p-1">
-                                    <TabsList className="w-full justify-start h-auto bg-transparent p-0">
-                                      {getFilteredArtifacts("code").map((file) => (
-                                        <TabsTrigger
-                                          key={file.id}
-                                          value={file.id}
-                                          className={`text-xs py-1 px-3 data-[state=active]:bg-white data-[state=active]:text-azure-blue ${
-                                            selectedCodeFile === file.id ? "data-[state=active]:shadow-sm" : ""
-                                          }`}
-                                        >
-                                          {file.name}
-                                        </TabsTrigger>
-                                      ))}
-                                    </TabsList>
-                                  </div>
-
-                                  <div className="p-4 bg-white">
-                                    {getFilteredArtifacts("code").map((file) => (
-                                      <TabsContent
-                                        key={file.id}
-                                        value={file.id}
-                                        className="m-0 transition-all rounded-md"
-                                      >
-                                        <div ref={(el) => (artifactRefs.current[file.id] = el)}>
-                                          <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-2">
-                                              <h3 className="text-sm font-medium text-gray-800">{file.name}</h3>
-                                              <Badge className="bg-azure-gray text-gray-700 text-xs font-normal">
-                                                {file.version}
-                                              </Badge>
-                                            </div>
-                                            <Button
-                                              variant="outline"
-                                              size="sm"
-                                              className="border-azure-blue text-azure-blue hover:bg-azure-blue-5"
-                                            >
-                                              <FileText className="h-3 w-3 mr-1" />
-                                              Download
-                                            </Button>
-                                          </div>
-                                          <div className="bg-azure-gray/20 p-4 rounded-md border border-azure-border">
-                                            <pre className="text-xs overflow-x-auto text-gray-800">
-                                              <code>{file.content}</code>
-                                            </pre>
-                                          </div>
-                                        </div>
-                                      </TabsContent>
-                                    ))}
-                                  </div>
-                                </Tabs>
-                              </div>
-                            ) : (
-                              <div className="text-center p-6 text-gray-500 bg-azure-gray/20 rounded-md border border-azure-border flex flex-col items-center">
-                                <FileCode className="h-12 w-12 text-azure-blue/30 mb-2" />
-                                <p>No code files available yet</p>
-                              </div>
-                            )}
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
+              <AgentArtifacts 
+                availableVersions={availableVersions}
+                selectedVersion={selectedVersion}
+                setSelectedVersion={setSelectedVersion}
+                openSections={openSections}
+                toggleSection={toggleSection}
+                getFilteredArtifacts={getFilteredArtifacts}
+                selectedCodeFile={selectedCodeFile}
+                setSelectedCodeFile={setSelectedCodeFile}
+                readyArtifacts={readyArtifacts}
+                artifactRefs={artifactRefs}
+                artifacts={artifacts}
+                currentMetricData={currentMetricData}
+                getLatestMetric={getLatestMetric}
+                renderMetricsChart={renderMetricsChart}
+              />
             </div>
           </div>
         </div>
