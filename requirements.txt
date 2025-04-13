@@ -58,5 +58,7 @@ azure.ai.inference
 humanize
 genson
 
+jsonpickle
+
 azure-ai-projects
 azure.storage.blob
