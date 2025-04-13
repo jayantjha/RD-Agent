@@ -164,7 +164,6 @@ class FolderWatcher(FileSystemEventHandler):
         content_type = content_type_map.get(file_path.suffix, "application/octet-stream")
         
         blob_name = file_path.relative_to(self.folder_path).as_posix()
-        publish_trace("FILE_MODIFIED", TaskStatus.COMPLETED, f"File modified: {file_path}", self.session_id)
         try:
             with open(file_path, "rb") as data:
                 self.container_client.upload_blob(
