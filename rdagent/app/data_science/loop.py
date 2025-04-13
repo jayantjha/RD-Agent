@@ -222,7 +222,7 @@ def main(
         rdagent kaggle --competition playground-series-s4e8  # You are encouraged to use this one.
     """
     publish_trace("DS_LOOP", TaskStatus.STARTED, "data science loop started")
-    foundry.set_loop_count(0)
+    foundry.set_loop_count(loop_n)
 
     if competition is not None:
         DS_RD_SETTING.competition = competition

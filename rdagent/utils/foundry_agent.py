@@ -32,7 +32,7 @@ class FoundryAgent:
     def __init__(self):
         if not self._initialized:
             self._project_client = None
-            self._loop_count = 0
+            self._loop_count = None
             self._session_id = None
             self._initialized = True
     
@@ -102,10 +102,11 @@ class FoundryAgent:
             payload_dict = {
                 "task": task, 
                 "status": status.value, 
-                "message": message_content,
-                "loop_count": self._loop_count
+                "message": message_content
             }
 
+            if self.loop_count is not None:
+                payload_dict["loop_count"] = self.loop_count
             if description:
                 payload_dict["description"] = description
             if details:
@@ -149,8 +150,7 @@ class FoundryAgent:
             payload = json.dumps({
                 "type": "approval", 
                 "requestId": request_id, 
-                "message": message_content,
-                "loop_count": self._loop_count
+                "message": message_content
             })
             
             with self.get_project_client() as project_client:
