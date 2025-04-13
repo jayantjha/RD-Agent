@@ -19,7 +19,7 @@ from typing import Any, Callable, Optional, TypeVar, Union, cast
 from tqdm.auto import tqdm
 
 from rdagent.log import rdagent_logger as logger
-from rdagent.utils.foundry_agent import TaskStatus, publish_trace
+from rdagent.utils.foundry_agent import TaskStatus, publish_trace, foundry
 
 
 class LoopMeta(type):
@@ -118,6 +118,7 @@ class LoopBase:
                 name = self.steps[si]
                 
                 logger.info(f"Start Loop {li}, Step {si}: {name}")
+                foundry.set_loop_count(li)
                 publish_trace("RDLOOP", TaskStatus.STARTED, f"Start Loop {li}, Step {si}: {name}")
                 
                 with logger.tag(f"Loop_{li}.{name}"):

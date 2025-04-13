@@ -24,7 +24,7 @@ from rdagent.core.exception import CoderError, RunnerError
 from rdagent.core.proposal import ExperimentFeedback
 from rdagent.core.scenario import Scenario
 from rdagent.core.utils import import_class
-from rdagent.utils.foundry_agent import TaskStatus, publish_trace
+from rdagent.utils.foundry_agent import TaskStatus, publish_trace, foundry
 from rdagent.log import rdagent_logger as logger
 from rdagent.scenarios.data_science.dev.feedback import DSExperiment2Feedback
 from rdagent.scenarios.data_science.dev.runner import DSCoSTEERRunner
@@ -222,6 +222,7 @@ def main(
         rdagent kaggle --competition playground-series-s4e8  # You are encouraged to use this one.
     """
     publish_trace("DS_LOOP", TaskStatus.STARTED, "data science loop started")
+    foundry.set_loop_count(0)
 
     if competition is not None:
         DS_RD_SETTING.competition = competition
