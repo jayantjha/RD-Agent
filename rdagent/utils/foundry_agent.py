@@ -33,6 +33,7 @@ class FoundryAgent:
         if not self._initialized:
             self._project_client = None
             self._loop_count = 0
+            self._session_id = None
             self._initialized = True
     
     @property
@@ -43,6 +44,15 @@ class FoundryAgent:
     def set_loop_count(self, count: int) -> None:
         """Set the loop count to a specific value."""
         self._loop_count = count
+
+    @property
+    def session_id(self) -> Optional[str]:
+        """Get the current session ID."""
+        return self._session_id
+    
+    def set_session_id(self, session_id: str) -> None:
+        """Set the session ID to a specific value."""
+        self._session_id = session_id
     
     def get_project_client(self):
         """
@@ -100,6 +110,8 @@ class FoundryAgent:
                 payload_dict["description"] = description
             if details:
                 payload_dict["details"] = details
+            if self.session_id:
+                payload_dict["session_id"] = self.session_id
             if kwargs:
                 payload_dict.update(kwargs)
             
