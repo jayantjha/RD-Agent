@@ -1,17 +1,27 @@
 /**
  * API client for manifest-related endpoints
+ * This file provides functions for interacting with manifest API endpoints
  */
-import { API_CONFIG } from '../config';
+import { config } from '../config/index';
 
 // Constants
-const SESSION_ID = "0ff86955-de91-4f59-b21a-cb4367cd912e";
+// const SESSION_ID = "0ff86955-de91-4f59-b21a-cb4367cd912e";
+
+/**
+ * Configuration for manifest API
+ */
+export const MANIFEST_API_CONFIG = {
+  BASE_URL: config.apiBaseUrl
+};
 
 /**
  * Fetches manifest data for a specific version (loop)
+ * @param version The version identifier (loop)
+ * @returns Promise with the manifest data
  */
-export async function fetchManifestData(version: string) {
+export async function fetchManifestData(version: string, sessionId: string) {
   const response = await fetch(
-    `${API_CONFIG.BASE_URL}/data/manifest/${SESSION_ID}?loop=${version}`,
+    `${MANIFEST_API_CONFIG.BASE_URL}/data/manifest/${sessionId}?loop=${version}`,
     {
       method: 'GET',
       headers: {
@@ -23,6 +33,6 @@ export async function fetchManifestData(version: string) {
   if (!response.ok) {
     throw new Error(`API request failed with status: ${response.status}`);
   }
-  console.log(response);
+  
   return response.json();
 }

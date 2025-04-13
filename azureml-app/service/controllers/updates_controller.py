@@ -37,6 +37,7 @@ async def get_saved_updates(thread_id: str):
             
             # Create new simplified JSON with only the content.text.value
             simplified_messages = []
+            seen_content = set()  # Track unique content values
             for msg in all_messages:
                 # Check if message has content and text value
                 if (msg.content and 
@@ -51,7 +52,13 @@ async def get_saved_updates(thread_id: str):
                     # Extract timestamp and value
                     if msg.content[0].text.value:
                         try:
-                            parsed = json.loads(msg.content[0].text.value)
+                            text_value = msg.content[0].text.value
+                            # Skip if we've already seen this exact content
+                            if text_value in seen_content:
+                                continue
+                            seen_content.add(text_value)
+                            
+                            parsed = json.loads(text_value)
                             parsed["createdAt"] = timestamp
                             parsed["id"] = msg.id
                             simplified_messages.append(parsed)
@@ -83,6 +90,7 @@ async def event_stream_polling(project_client, thread_id: str):
                             parsed = json.loads(text_value)
                             if hasattr(msg.created_at, 'timestamp'):
                                 parsed["createdAt"] = int(msg.created_at.timestamp())
+                                parsed["id"] = msg.id
                             new_messages.append(parsed)
                     except (AttributeError, IndexError, json.JSONDecodeError) as e:
                         print(f"Skipping message due to error: {e}")
@@ -100,7 +108,7 @@ async def event_stream_polling(project_client, thread_id: str):
 async def event_saved_stream(messages: list):
     for msg in messages:
         await asyncio.sleep(1)
-        yield f"data: {json.dump(msg)}\n\n"
+        yield f"data: {json.dumps(msg)}\n\n"
 
 async def get_all_messages_paged(project_client, thread_id, page_size=20):
     # Get the first page

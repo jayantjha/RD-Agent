@@ -1,28 +1,7 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef, useEffect } from "react"
-import {
-  Bot,
-  FileCode,
-  BarChart3,
-  Database,
-  Clock,
-  ArrowRight,
-  ChevronRight,
-  ChevronDown,
-  FileText,
-  Loader2,
-  Rocket,
-  Shield,
-  CheckCircle2,
-  XCircle,
-  Paperclip,
-  Send,
-  ChevronUp,
-} from "lucide-react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 // Import ML Agent components
 import { AgentProgress } from "@/components/ml-agent/AgentProgress"
@@ -117,7 +96,7 @@ export default function MLAgentPage() {
         name: "main.py",
         version: "v4",
         content:
-          "# ML Pipeline v4\nimport pandas as pd\nimport numpy as np\nfrom sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.impute import KNNImputer\nfrom sklearn.decomposition import PCA\nfrom sklearn.feature_selection import SelectFromModel, RFE\n\ndef load_data(file_path):\n    # Load the dataset\n    df = pd.read_csv(file_path)\n    return df\n\ndef preprocess(df):\n    # Handle missing values with KNN imputation\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    categorical_cols = df.select_dtypes(include(['object']).columns\n    \n    # Handle categorical missing values\n    for col in categorical_cols:\n        df[col] = df[col].fillna(df[col].mode()[0])\n    \n    # Handle numerical missing values with KNN\n    if len(numerical_cols) > 0:\n        imputer = KNNImputer(n_neighbors=5)\n        df[numerical_cols] = imputer.fit.transform(df[numerical_cols])\n    \n    # Normalize numerical features\n    df[numerical_cols] = (df[numerical_cols] - df[numerical_cols].mean()) / df[numerical_cols].std()\n    \n    return df\n\ndef engineer_features_advanced(df):\n    # Create interaction features\n    for col1 in df.columns[:3]:\n        for col2 in df.columns[3:6]:\n            df[f'{col1}_{col2}_interaction'] = df[col1] * df[col2]\n    \n    # Create polynomial features\n    for col in df.select_dtypes(include(['float64', 'int64']).columns[:5]:\n        df[f'{col}_squared'] = df[col] ** 2\n        df[f'{col}_cubed'] = df[col] ** 3\n    \n    # Apply PCA for dimensionality reduction\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    if len(numerical_cols) > 10:\n        pca = PCA(n_components=10)\n        pca_result = pca.fit.transform(df[numerical_cols])\n        for i in range(10):\n            df[f'pca_{i+1}'] = pca_result[:, i]\n    \n    return df\n\ndef select_features(X, y):\n    # Method 1: Feature importance from Random Forest\n    rf = RandomForestClassifier(n_estimators=100)\n    rf.fit(X, y)\n    \n    # Select top features based on importance\n    sfm = SelectFromModel(rf, threshold='median')\n    X_selected = sfm.fit.transform(X, y)\n    \n    # Method 2: Recursive Feature Elimination\n    rfe = RFE(estimator=RandomForestClassifier(n_estimators=50), n_features_to_select=20)\n    X_rfe = rfe.fit.transform(X, y)\n    \n    # Get feature names\n    selected_features = X.columns[sfm.get_support()]\n    rfe_features = X.columns[rfe.get_support()]\n    \n    # Combine both methods\n    final_features = list(set(selected_features) | set(rfe_features))\n    \n    return X[final_features], final_features\n\ndef train_ensemble(X, y):\n    # Split data\n    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n    \n    # Create base models\n    rf = RandomForestClassifier(n_estimators=200, max_depth=20)\n    gb = GradientBoostingClassifier(n_estimators=200, learning_rate=0.1)\n    lr = LogisticRegression(C=0.1)\n    \n    # Create and train ensemble\n    ensemble = VotingClassifier(\n        estimators=[('rf', rf), ('gb', gb), ('lr', lr)],\n        voting='soft'\n    )\n    ensemble.fit(X_train, y_train)\n    \n    # Evaluate\n    accuracy = ensemble.score(X_test, y_test)\n    \n    return ensemble, accuracy\n\n# Main pipeline execution\ndef run_pipeline(data_path, target_col):\n    # Load data\n    df = load_data(data_path)\n    \n    # Preprocess\n    df_processed = preprocess(df)\n    \n    # Advanced feature engineering\n    df_engineered = engineer_features_advanced(df_processed)\n    \n    # Split features and target\n    X = df_engineered.drop(target_col, axis=1)\n    y = df.engineered[target_col]\n    \n    # Feature selection\n    X_selected, selected_features = select_features(X, y)\n    print(f\"Selected {len(selected_features)} features\")\n    \n    # Train ensemble model\n    model, accuracy = train_ensemble(X_selected, y)\n    \n    print(f\"Ensemble model trained with accuracy: {accuracy:.4f}\")\n    return model, accuracy",
+          "# ML Pipeline v4\nimport pandas as pd\nimport numpy as np\nfrom sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier\nfrom sklearn.linear.model import LogisticRegression\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.impute import KNNImputer\nfrom sklearn.decomposition import PCA\nfrom sklearn.feature_selection import SelectFromModel, RFE\n\ndef load_data(file_path):\n    # Load the dataset\n    df = pd.read_csv(file_path)\n    return df\n\ndef preprocess(df):\n    # Handle missing values with KNN imputation\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    categorical_cols = df.select_dtypes(include(['object']).columns\n    \n    # Handle categorical missing values\n    for col in categorical_cols:\n        df[col] = df[col].fillna(df[col].mode()[0])\n    \n    # Handle numerical missing values with KNN\n    if len(numerical_cols) > 0:\n        imputer = KNNImputer(n_neighbors=5)\n        df[numerical_cols] = imputer.fit.transform(df[numerical_cols])\n    \n    # Normalize numerical features\n    df[numerical_cols] = (df[numerical_cols] - df[numerical_cols].mean()) / df[numerical_cols].std()\n    \n    return df\n\ndef engineer_features_advanced(df):\n    # Create interaction features\n    for col1 in df.columns[:3]:\n        for col2 in df.columns[3:6]:\n            df[f'{col1}_{col2}_interaction'] = df[col1] * df[col2]\n    \n    # Create polynomial features\n    for col in df.select_dtypes(include(['float64', 'int64']).columns[:5]:\n        df[f'{col}_squared'] = df[col] ** 2\n        df[f'{col}_cubed'] = df[col] ** 3\n    \n    # Apply PCA for dimensionality reduction\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    if len(numerical_cols) > 10:\n        pca = PCA(n_components=10)\n        pca_result = pca.fit.transform(df[numerical_cols])\n        for i in range(10):\n            df[f'pca_{i+1}'] = pca_result[:, i]\n    \n    return df\n\ndef select_features(X, y):\n    # Method 1: Feature importance from Random Forest\n    rf = RandomForestClassifier(n_estimators=100)\n    rf.fit(X, y)\n    \n    # Select top features based on importance\n    sfm = SelectFromModel(rf, threshold='median')\n    X_selected = sfm.fit.transform(X, y)\n    \n    # Method 2: Recursive Feature Elimination\n    rfe = RFE(estimator=RandomForestClassifier(n_estimators=50), n_features_to_select=20)\n    X_rfe = rfe.fit.transform(X, y)\n    \n    # Get feature names\n    selected_features = X.columns[sfm.get_support()]\n    rfe_features = X.columns[rfe.get_support()]\n    \n    # Combine both methods\n    final_features = list(set(selected_features) | set(rfe_features))\n    \n    return X[final_features], final_features\n\ndef train_ensemble(X, y):\n    # Split data\n    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n    \n    # Create base models\n    rf = RandomForestClassifier(n_estimators=200, max_depth=20)\n    gb = GradientBoostingClassifier(n_estimators=200, learning_rate=0.1)\n    lr = LogisticRegression(C=0.1)\n    \n    # Create and train ensemble\n    ensemble = VotingClassifier(\n        estimators=[('rf', rf), ('gb', gb), ('lr', lr)],\n        voting='soft'\n    )\n    ensemble.fit(X_train, y_train)\n    \n    # Evaluate\n    accuracy = ensemble.score(X_test, y_test)\n    \n    return ensemble, accuracy\n\n# Main pipeline execution\ndef run_pipeline(data_path, target_col):\n    # Load data\n    df = load_data(data_path)\n    \n    # Preprocess\n    df_processed = preprocess(df)\n    \n    # Advanced feature engineering\n    df_engineered = engineer_features_advanced(df_processed)\n    \n    # Split features and target\n    X = df_engineered.drop(target_col, axis=1)\n    y = df.engineered[target_col]\n    \n    # Feature selection\n    X_selected, selected_features = select_features(X, y)\n    print(f\"Selected {len(selected_features)} features\")\n    \n    # Train ensemble model\n    model, accuracy = train_ensemble(X_selected, y)\n    \n    print(f\"Ensemble model trained with accuracy: {accuracy:.4f}\")\n    return model, accuracy",
       },
     ],
     models: [
@@ -142,82 +121,23 @@ export default function MLAgentPage() {
 
   const [agentActivities, setAgentActivities] = useState<any[]>([])
   const [currentMetricData, setCurrentMetricData] = useState<number[]>([])
+  const [currentActivityIndex, setCurrentActivityIndex] = useState<number>(-1)
+  const [availableLoopCounts, setAvailableLoopCounts] = useState<number[]>([]);
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
 
   // Auto-scroll to the bottom of messages when new messages are added
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  // Scroll to highlighted artifact
-  // useEffect(() => {
-  //   if (highlightedArtifact && artifactRefs.current[highlightedArtifact]) {
-  //     artifactRefs.current[highlightedArtifact]?.scrollIntoView({ behavior: "smooth", block: "center" })
-
-  //     // Flash effect - using bg-blue-100 instead of bg-azure-blue-10 which may not exist in default Tailwind
-  //     const element = artifactRefs.current[highlightedArtifact]
-  //     element?.classList.add("bg-blue-100")
-  //     setTimeout(() => {
-  //       element?.classList.remove("bg-blue-100")
-  //     }, 2000)
-  //   }
-  // }, [highlightedArtifact])
-
-  // Auto-scroll to the bottom of the activity stream when new activities are added
-  // useEffect(() => {
-  //   if (agentActivities.length > 0 && isStreaming) {
-  //     activityStreamEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  //   }
-  // }, [agentActivities, isStreaming])
-
-  // Set initial code file when artifacts change or version changes
+  // Update available versions when loop counts change
   useEffect(() => {
-    const versionCodeFiles = artifacts.code.filter(
-      (file) => file.version === selectedVersion && readyArtifacts.code.includes(file.id),
-    )
-    if (versionCodeFiles.length > 0) {
-      setSelectedCodeFile(versionCodeFiles[0].id)
+    if (availableLoopCounts.length > 0) {
+      // Convert loop counts to string versions (e.g., "0", "1", "2")
+      const versionStrings = availableLoopCounts.map(count => count.toString());
+      setAvailableVersions(versionStrings);
     }
-  }, [artifacts.code, selectedVersion, readyArtifacts.code])
-
-  // Update available versions when ready artifacts change
-  useEffect(() => {
-    const versions = new Set<string>()
-    // test code
-    versions.add ("0");
-    versions.add ("1");
-    console.log(Array.from(versions));
-    setAvailableVersions(Array.from(versions))
-
-    // Add versions from ready artifacts
-    // readyArtifacts.code.forEach((id) => {
-    //   const artifact = artifacts.code.find((a) => a.id === id)
-    //   if (artifact) versions.add(artifact.version)
-    // })
-
-    // readyArtifacts.models.forEach((id) => {
-    //   const artifact = artifacts.models.find((a) => a.id === id)
-    //   if (artifact) versions.add(artifact.version)
-    // })
-
-    // readyArtifacts.metrics.forEach((id) => {
-    //   const artifact = artifacts.metrics.find((a) => a.id === id)
-    //   if (artifact) versions.add(artifact.version)
-    // })
-
-    // const sortedVersions = Array.from(versions).sort((a, b) => {
-    //   // Sort by version number (v1, v2, v3, v4)
-    //   return a.localeCompare(b, undefined, { numeric: true })
-    // })
-
-    // setAvailableVersions(sortedVersions)
-
-    // // Always set selected version to the latest available
-    // if (sortedVersions.length > 0) {
-    //   setSelectedVersion(sortedVersions[sortedVersions.length - 1])
-    // }
-
-    // readyArtifacts, artifacts
-  }, [isAgentRunning])
+  }, [availableLoopCounts]);
 
   // Update metrics data when a new metric is added
   useEffect(() => {
@@ -232,11 +152,6 @@ export default function MLAgentPage() {
       setFiles(Array.from(e.target.files))
     }
   }
-
-  // Add a state to store the interval ID
-  const [agentIntervalId, setAgentIntervalId] = useState<number | null>(null)
-  const [currentActivityIndex, setCurrentActivityIndex] = useState<number>(-1)
-  const [eventSource, setEventSource] = useState<EventSource | null>(null)
 
   const handleSendMessage = () => {
     if (!userMessage.trim() && !readyToStart) return
@@ -405,7 +320,7 @@ export default function MLAgentPage() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Update the startAgent function to store the interval ID
+  // Update the startAgent function to initialize agent
   const startAgent = () => {
     if (!readyToStart) return
 
@@ -425,160 +340,7 @@ export default function MLAgentPage() {
     // Reset available versions
     setAvailableVersions([])
     setSelectedVersion("")
-
-    // Connect to the streaming updates endpoint
-    connectToEventStream()
   }
-
-  // event mappings
-  const mappings: Record<string, string> = {
-    "DS_LOOP": "ML Agent",
-    "DS_SCENARIO": "Understanding data and requirements",
-    "RDLOOP": "Main R & D loop",
-    "CODING": "Coder agent",
-    "EXPERIMENT_GENERATION": "Generating experiment for the loop",
-    "DATA_LOADING": "Code for loading data",
-    "FEATURE_TASK": "Code for feature engineering",
-    "MODEL_TASK": "Code for hypothesized model",
-    "ENSEMBLE_TASK": "Generating ensemble model",
-    "WORKFLOW_TASK": "Developing workflow",
-    "FEEDBACK": "Gathering feedback for the loop",
-    "RECORD": "Recording results"
-  }
-  
-  const connectToEventStream = () => {
-    // Close any existing connection
-    if (eventSource) {
-      eventSource.close()
-    }
-    
-    // Create a new EventSource connection
-    const newEventSource = new EventSource('http://localhost:5000/updates/saved/thread_r4EZ1fbjwQiUmrtZUULEjh8M')
-    setEventSource(newEventSource)
-
-    // Set up event handlers
-    newEventSource.onmessage = (event) => {
-      try {
-        console.log(event)
-        const data = JSON.parse(event.data)
-        processAgentActivity(data)
-      } catch (error) {
-        console.error('Error parsing event data:', error)
-      }
-    }
-
-    newEventSource.onerror = (error) => {
-      console.error('EventSource error:', error)
-      
-      // Attempt to reconnect after a delay if streaming is still active
-      if (isStreaming) {
-        setTimeout(() => {
-          if (isStreaming) {
-            console.log('Attempting to reconnect to event stream...')
-            connectToEventStream()
-          }
-        }, 3000)
-      } else {
-        newEventSource.close()
-        setEventSource(null)
-      }
-    }
-  }
-
-  const processAgentActivity = (data: any) => {
-    // Convert streaming data to activity format
-    console.log("activity", data)
-
-    // activity mappings
-    
-    const activity = {
-      id: data.id || `activity-${Date.now()}`,
-      timestamp: new Date(data.createdAt * 1000),
-      message: `${mappings[data.task] || data.task} : ${data.status.toLowerCase()}`,
-      shortDescription: data.shortDescription || "",
-      details: data.message || "No details provided",
-      type: data.type || "info",
-      artifactId: data.artifactId,
-      artifactName: data.artifactName,
-      version: data.version || "v1",
-      status: data.status || "done",
-    }
-
-    // Update activities state
-    setAgentActivities((prev) => {
-      // Mark all previous activities as done
-      const updatedActivities = prev.map((act) => ({
-        ...act,
-        status: "done",
-      }))
-
-      // Add the new activity
-      return [...updatedActivities, activity]
-    })
-
-    // Update current activity index
-    setCurrentActivityIndex((prev) => prev + 1)
-    
-    // Calculate progress (approximation since we don't know total number)
-    // You may need to adjust this based on your specific use case
-    setProgress((prevProgress) => Math.min(100, prevProgress + 5))
-
-    // Update ready artifacts when an artifact is created
-    if (activity.artifactId) {
-      if (activity.artifactId.startsWith("code")) {
-        setReadyArtifacts((prev) => ({
-          ...prev,
-          code: [...prev.code, activity.artifactId!],
-        }))
-      } else if (activity.artifactId.startsWith("model")) {
-        setReadyArtifacts((prev) => ({
-          ...prev,
-          models: [...prev.models, activity.artifactId!],
-        }))
-      } else if (activity.artifactId.startsWith("metric")) {
-        setReadyArtifacts((prev) => ({
-          ...prev,
-          metrics: [...prev.metrics, activity.artifactId!],
-        }))
-      }
-    }
-
-    // If the message indicates completion, end the streaming
-    if (activity.type === "complete") {
-      setIsStreaming(false)
-      setCurrentActivityIndex(-1)
-      if (eventSource) {
-        eventSource.close()
-        setEventSource(null)
-      }
-    }
-  }
-
-  const stopAgent = () => {
-    // Close the EventSource connection
-    if (eventSource) {
-      eventSource.close()
-      setEventSource(null)
-    }
-    
-    // Clean up any existing interval
-    if (agentIntervalId) {
-      clearInterval(agentIntervalId)
-      setAgentIntervalId(null)
-    }
-    
-    setIsStreaming(false)
-    setCurrentActivityIndex(-1)
-  }
-
-  // Clean up EventSource on component unmount
-  useEffect(() => {
-    return () => {
-      if (eventSource) {
-        eventSource.close()
-      }
-    }
-  }, [eventSource])
 
   // Modify the getFilteredArtifacts function to only return ready artifacts
   const getFilteredArtifacts = (type: "code" | "models" | "metrics") => {
@@ -597,38 +359,6 @@ export default function MLAgentPage() {
       })
 
     return versionMetrics.length > 0 ? versionMetrics[versionMetrics.length - 1] : null
-  }
-
-  const getActivityIcon = (type: string, status: string, index: number) => {
-    // If this is the current activity and we're streaming, show loading icon
-    if (isStreaming && index === currentActivityIndex) {
-      return <Loader2 className="h-4 w-4 animate-spin text-azure-blue" />
-    }
-
-    // Otherwise, show status icon
-    if (status === "failed") {
-      return <XCircle className="h-4 w-4 text-red-500" />
-    }
-
-    if (status === "done") {
-      return <CheckCircle2 className="h-4 w-4 text-green-500" />
-    }
-
-    // Default icons based on type
-    switch (type) {
-      case "info":
-        return <Bot className="h-4 w-4" />
-      case "code":
-        return <FileCode className="h-4 w-4" />
-      case "model":
-        return <Database className="h-4 w-4" />
-      case "metrics":
-        return <BarChart3 className="h-4 w-4" />
-      case "complete":
-        return <ArrowRight className="h-4 w-4" />
-      default:
-        return <Bot className="h-4 w-4" />
-    }
   }
 
   const toggleSection = (section: keyof typeof openSections) => {
@@ -669,19 +399,10 @@ export default function MLAgentPage() {
   }
 
   // Setup form when agent is not running
-  // !isAgentRunning
   if (!isAgentRunning) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white">
         <div className="w-full max-w-3xl flex flex-col items-center">
-          <div className="flex flex-col items-center justify-center mb-12 mt-20">
-            <Avatar className="h-16 w-16 mb-4">
-              <AvatarFallback className="bg-azure-blue text-white text-xl">ML</AvatarFallback>
-            </Avatar>
-            <h2 className="text-xl text-gray-600 mb-2">ML Agent</h2>
-            <h1 className="text-3xl font-semibold text-gray-800 text-center">How can I help you today?</h1>
-          </div>
-
           <ChatUI 
             messages={messages}
             userMessage={userMessage}
@@ -709,7 +430,7 @@ export default function MLAgentPage() {
         filesCount={files.length}
         progress={progress}
         isStreaming={isStreaming}
-        stopAgent={stopAgent}
+        stopAgent={() => setIsStreaming(false)}
       />
 
       {/* Main content area with split panes */}
@@ -721,13 +442,20 @@ export default function MLAgentPage() {
               <AgentProgress 
                 startAgent={startAgent}
                 agentActivities={agentActivities}
+                setAgentActivities={setAgentActivities}
                 isStreaming={isStreaming}
+                setIsStreaming={setIsStreaming}
                 currentActivityIndex={currentActivityIndex}
+                setCurrentActivityIndex={setCurrentActivityIndex}
                 expandedActivities={expandedActivities}
                 toggleActivityExpand={toggleActivityExpand}
-                // getActivityIcon={getActivityIcon}
                 handleArtifactLink={handleArtifactLink}
                 activityStreamEndRef={activityStreamEndRef as React.RefObject<HTMLDivElement>}
+                setProgress={setProgress}
+                setReadyArtifacts={setReadyArtifacts}
+                setAvailableLoopCounts={setAvailableLoopCounts}
+                setSessionId={setSessionId}
+                setSelectedVersion={setSelectedVersion}
               />   
             </div>
             {/* Right pane: Artifacts */}
@@ -747,6 +475,7 @@ export default function MLAgentPage() {
                 currentMetricData={currentMetricData}
                 getLatestMetric={getLatestMetric}
                 renderMetricsChart={renderMetricsChart}
+                sessionId={sessionId}
               />
             </div>
           </div>
