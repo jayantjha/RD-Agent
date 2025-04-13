@@ -99,14 +99,14 @@ class DataScienceV2RDLoop(DataScienceRDLoop):
                 )
             self._log_object(manifest, "manifest", step_name)
             self._log_object(manifest, "manifest", step_name, Path(DS_RD_SETTING.session_path) / "log" / f"Loop_{self.loop_idx}")
-        publish_trace("MANIFEST_CREATED", TaskStatus.SUCCESS, f"Manifest created for loop {self.loop_idx}, step {step_name}", self.session_id)
+        publish_trace("MANIFEST_CREATED", TaskStatus.COMPLETED, f"Manifest created for loop {self.loop_idx}, step {step_name}")
 
 
     def _write_experiment_data(self, exp, step_name):
         if not DS_RD_SETTING.log_experiment:
             return
         self._log_object(exp, "experiment", step_name)
-        publish_trace("EXPERIMENT_LOGGED", TaskStatus.SUCCESS, f"Experiment logged for loop {self.loop_idx}, step {step_name}", self.session_id)
+        publish_trace("EXPERIMENT_LOGGED", TaskStatus.COMPLETED, f"Experiment logged for loop {self.loop_idx}, step {step_name}")
         
 
     def _log_object(self, obj:object, name:str, step_name:str, path:Optional[Path]=None):
@@ -164,7 +164,7 @@ class FolderWatcher(FileSystemEventHandler):
         content_type = content_type_map.get(file_path.suffix, "application/octet-stream")
         
         blob_name = file_path.relative_to(self.folder_path).as_posix()
-        publish_trace("FILE_MODIFIED", TaskStatus.SUCCESS, f"File modified: {file_path}", self.session_id)
+        publish_trace("FILE_MODIFIED", TaskStatus.COMPLETED, f"File modified: {file_path}", self.session_id)
         try:
             with open(file_path, "rb") as data:
                 self.container_client.upload_blob(
@@ -175,7 +175,7 @@ class FolderWatcher(FileSystemEventHandler):
                 )
                 logger.info(f"Uploaded {file_path} to blob storage as {blob_name} with content type {content_type}")
                 if file_path.name == "main.py":
-                    publish_trace("DS_UPLOADED", TaskStatus.SUCCESS, f"Uploaded {file_path} to blob storage as {blob_name}", self.session_id)
+                    publish_trace("DS_UPLOADED", TaskStatus.COMPLETED, f"Uploaded {file_path} to blob storage as {blob_name}", self.session_id)
         except Exception as e:
            return
 
