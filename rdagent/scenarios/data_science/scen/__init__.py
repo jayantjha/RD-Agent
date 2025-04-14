@@ -31,10 +31,10 @@ class DataScienceScen(Scenario):
 
         self.competition = competition
 
-        publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Getting description")
+        publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Fetching raw description")
         self.raw_description = self._get_description() 
 
-        publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Getting folder description")
+        publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Getting data folder description")
         self.processed_data_folder_description = self._get_data_folder_description()
 
         publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Analyzing competition description")
@@ -42,7 +42,7 @@ class DataScienceScen(Scenario):
 
         publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Getting metrics direction")
         self.metric_direction = self._get_direction()
-        publish_trace("DS_SCENARIO", TaskStatus.COMPLETED, "Initialized Data Science Scenario")
+        publish_trace("DS_SCENARIO", TaskStatus.COMPLETED, "Initialized the task scenario")
 
     def _get_description(self):
         if (fp := Path(f"{DS_RD_SETTING.local_data_path}/{self.competition}.json")).exists():
