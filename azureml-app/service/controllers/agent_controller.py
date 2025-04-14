@@ -20,6 +20,7 @@ async def execute_agent(request: AgentRequest):
             raise HTTPException(status_code=400, detail="data_uri must not be empty")
 
         logger.info("Agent execution logic would go here")
+
         async with DefaultAzureCredential() as creds:
             async with AIProjectClient.from_connection_string(
                 credential=creds, conn_str=PROJECT_CONNECTION_STRING
