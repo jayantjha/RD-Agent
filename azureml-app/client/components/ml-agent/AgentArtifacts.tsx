@@ -11,7 +11,7 @@ import { CodeArtifactsTab } from "./tabs/CodeArtifactsTab"
 import { MetricsArtifactsTab } from "./tabs/MetricsArtifactsTab"
 import { ModelsArtifactsTab } from "./tabs/ModelsArtifactsTab"
 import { useManifestData } from "@/lib/queries/useManifestData"
-import { parseJSON } from "@/lib/utils" 
+import { extractMetricsFromManifest, parseJSON, storeMetric } from "@/lib/utils" 
 
 // Utility function to format file size to MB or KB depending on size
 const formatSizeInMB = (sizeInBytes: number) => {
@@ -129,12 +129,12 @@ interface AgentArtifactsProps {
   toggleSection: (section: any) => void
   selectedCodeFile: string
   setSelectedCodeFile: (fileId: string) => void
-  currentMetricData: number[]
   artifactRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>
   getFilteredArtifacts: (type: "code" | "models" | "metrics") => any[]
   getLatestMetric: () => any
   renderMetricsChart: (accuracies: number[]) => React.JSX.Element
   sessionId?: string
+  onMetricUpdate?: (metricValue: number) => void
 }
 
 export function AgentArtifacts({
@@ -147,18 +147,30 @@ export function AgentArtifacts({
   toggleSection,
   selectedCodeFile,
   setSelectedCodeFile,
-  currentMetricData,
   artifactRefs,
   getFilteredArtifacts,
   getLatestMetric,
   renderMetricsChart,
   sessionId,
+  onMetricUpdate,
 }: AgentArtifactsProps) {
   // Use React Query hook for manifest data, passing sessionId when available
   const { data: manifestData, isLoading, error } = useManifestData(selectedVersion, sessionId || "");
-  
+  const [ currentMetricData, setCurrentMetricData ] = React.useState<number | undefined>(undefined);
   // Parse the JSON string from manifest data
   const parsedManifest = manifestData ? parseJSON(manifestData) : null;
+
+  React.useEffect(() => {
+    if (parsedManifest) {
+      const metricValue = extractMetricsFromManifest(parsedManifest);
+      if (metricValue !== null && metricValue !== currentMetricData) {
+        // Store the metric in localStorage
+        storeMetric(sessionId || "", selectedVersion, metricValue);
+        setCurrentMetricData(metricValue);
+      }
+    }
+  }, [parsedManifest]);
+  //, sessionId, selectedVersion, currentMetricData
   const runId = selectedVersion || undefined;
 
   const handleVersionChange = useCallback((version: string) => {
@@ -245,9 +257,11 @@ export function AgentArtifacts({
               <MetricsArtifactsTab 
                 currentMetricData={currentMetricData}
                 getLatestMetric={getLatestMetric}
+                manifestData={parsedManifest}
                 renderMetricsChart={renderMetricsChart}
                 selectedVersion={selectedVersion}
                 artifactRefs={artifactRefs}
+                sessionId={sessionId}
               />
             </TabsContent>
           </Tabs>

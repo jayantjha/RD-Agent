@@ -40,11 +40,9 @@ export function CodeArtifactsTab({
   }];
   
   // Determine the file path from manifest data and selected file
-  console.log(manifestData);
   const filePath = selectedFile && manifestData?.workspace_path 
     ? `${manifestData.workspace_path}/${selectedFile.name}`
     : undefined;
-    console.log(filePath);
   // Fetch file content using our new hook with the sessionId from props
   const { data: fileContent, isLoading, error } = useFileContent(sessionId, filePath);
   

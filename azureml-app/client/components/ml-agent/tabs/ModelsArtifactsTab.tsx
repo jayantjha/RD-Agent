@@ -36,7 +36,6 @@ export function ModelsArtifactsTab({
   
   const { data: fileContent, isLoading, error } = useFileContent(SESSION_ID, readmeFilePath);
 
-  console.log(modelInfo);
   return (
     <div className="space-y-4">
       {/* First row: Display model information from manifest if available */}

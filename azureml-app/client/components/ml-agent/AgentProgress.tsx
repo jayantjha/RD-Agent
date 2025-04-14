@@ -190,7 +190,7 @@ export function AgentProgress({
   }
 
   useEffect(() => {
-    if (isStreaming) startEventStream("thread_CuAMcI8U5J2YxrfrfWOKEdai", processAgentActivity, handleStreamError);
+    if (isStreaming) startEventStream("thread_7PXFL9qSS34jomDZghSiyWNX", processAgentActivity, handleStreamError);
     return () => stopEventStream();
   }, [isStreaming]);
 

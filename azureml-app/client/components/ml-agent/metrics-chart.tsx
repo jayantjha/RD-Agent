@@ -6,7 +6,7 @@ interface MetricsChartProps {
 }
 
 export const MetricsChart = forwardRef<SVGSVGElement, MetricsChartProps>(({ accuracies }, chartRef) => {
-  const versions = Array.from({ length: accuracies.length }, (_, i) => `v${i + 1}`)
+  const versions = Array.from({ length: accuracies.length }, (_, i) => `v${i}`)
 
   // Calculate chart dimensions - make it responsive but smaller
   const chartWidth = 100 // percentage
@@ -34,7 +34,7 @@ export const MetricsChart = forwardRef<SVGSVGElement, MetricsChartProps>(({ accu
         ref={chartRef}
         width="100%"
         height={chartHeight}
-        className="w-full h-auto"
+        className="w-full h-fix"
         viewBox={`0 0 ${chartHeight * 1.8} ${chartHeight}`}
         preserveAspectRatio="xMidYMid meet"
       >
@@ -65,10 +65,10 @@ export const MetricsChart = forwardRef<SVGSVGElement, MetricsChartProps>(({ accu
 
         {/* Y axis labels */}
         <text x={padding - 8} y={padding} textAnchor="end" fontSize="4.5" fill="currentColor">
-          1.0
+          {maxAccuracy.toFixed(2)}
         </text>
         <text x={padding - 8} y={chartHeight - padding} textAnchor="end" fontSize="4.5" fill="currentColor">
-          0.0
+          {Math.min(...accuracies).toFixed(2)}
         </text>
         <text
           x={padding - 8}
@@ -77,7 +77,7 @@ export const MetricsChart = forwardRef<SVGSVGElement, MetricsChartProps>(({ accu
           fontSize="4.5"
           fill="currentColor"
         >
-          0.5
+          {((Math.min(...accuracies) + maxAccuracy) / 2).toFixed(2)}
         </text>
 
         {/* Data points */}
