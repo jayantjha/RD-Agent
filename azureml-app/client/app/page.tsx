@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
+import { usePathname } from "next/navigation"
 
 // Import ML Agent components
 import { AgentProgress } from "@/components/ml-agent/AgentProgress"
@@ -90,7 +91,7 @@ export default function MLAgentPage() {
         name: "main.py",
         version: "v3",
         content:
-          "# ML Pipeline v3\nimport pandas as pd\nimport numpy as np\nfrom sklearn.ensemble import GradientBoostingClassifier\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.impute import KNNImputer\nfrom sklearn.decomposition import PCA\n\ndef load_data(file_path):\n    # Load the dataset\n    df = pd.read_csv(file_path)\n    return df\n\ndef preprocess(df):\n    # Handle missing values with KNN imputation\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    categorical_cols = df.select.dtypes(include(['object']).columns\n    \n    # Handle categorical missing values\n    for col in categorical_cols:\n        df[col] = df[col].fillna(df[col].mode()[0])\n    \n    # Handle numerical missing values with KNN\n    if len(numerical_cols) > 0:\n        imputer = KNNImputer(n_neighbors=5)\n        df[numerical_cols] = imputer.fit.transform(df[numerical_cols])\n    \n    # Normalize numerical features\n    df[numerical_cols] = (df[numerical_cols] - df[numerical_cols].mean()) / df[numerical_cols].std()\n    \n    return df\n\ndef engineer_features_advanced(df):\n    # Create interaction features\n    for col1 in df.columns[:3]:\n        for col2 in df.columns[3:6]:\n            df[f'{col1}_{col2}_interaction'] = df[col1] * df[col2]\n    \n    # Create polynomial features\n    for col in df.select_dtypes(include(['float64', 'int64']).columns[:5]:\n        df[f'{col}_squared'] = df[col] ** 2\n        df[f'{col}_cubed'] = df[col] ** 3\n    \n    # Apply PCA for dimensionality reduction\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    if len(numerical_cols) > 10:\n        pca = PCA(n_components=10)\n        pca_result = pca.fit.transform(df[numerical_cols])\n        for i in range(10):\n            df[f'pca_{i+1}'] = pca_result[:, i]\n    \n    return df\n\ndef train_model(X, y):\n    # Split data\n    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n    \n    # Train model\n    model = GradientBoostingClassifier(n_estimators=200, learning_rate=0.1)\n    model.fit(X_train, y_train)\n    \n    # Evaluate\n    accuracy = model.score(X_test, y_test)\n    \n    return model, accuracy\n\n# Main pipeline execution\ndef run_pipeline(data_path, target_col):\n    # Load data\n    df = load_data(data_path)\n    \n    # Preprocess\n    df_processed = preprocess(df)\n    \n    # Advanced feature engineering\n    df_engineered = engineer_features_advanced(df_processed)\n    \n    # Split features and target\n    X = df_engineered.drop(target_col, axis=1)\n    y = df.engineered[target_col]\n    \n    # Train model\n    model, accuracy = train_model(X, y)\n    \n    print(f\"Model trained with accuracy: {accuracy:.4f}\")\n    return model, accuracy",
+          "# ML Pipeline v3\nimport pandas as pd\nimport numpy as np\nfrom sklearn.ensemble import GradientBoostingClassifier\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.impute import KNNImputer\nfrom sklearn.decomposition import PCA\n\ndef load_data(file_path):\n    # Load the dataset\n    df = pd.read_csv(file_path)\n    return df\n\ndef preprocess(df):\n    # Handle missing values with KNN imputation\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    categorical_cols = df.select.dtypes(include(['object']).columns\n    \n    # Handle categorical missing values\n    for col in categorical_cols:\n        df[col] = df[col].fillna(df[col].mode()[0])\n    \n    # Handle numerical missing values with KNN\n    if len(numerical_cols) > 0:\n        imputer = KNNImputer(n_neighbors=5)\n        df[numerical_cols] = imputer.fit.transform(df[numerical_cols])\n    \n    # Normalize numerical features\n    df[numerical_cols] = (df[numerical_cols] - df[numerical_cols].mean()) / df[numerical_cols].std()\n    \n    return df\n\ndef engineer_features_advanced(df):\n    # Create interaction features\n    for col1 in df.columns[:3]:\n        for col2 in df.columns[3:6]:\n            df[f'{col1}_{col2}_interaction'] = df[col1] * df[col2]\n    \n    # Create polynomial features\n    for col in df.select_dtypes(include(['float64', 'int64']).columns[:5]:\n        df[f'{col}_squared'] = df[col] ** 2\n        df[f'{col}_cubed'] = df[col] ** 3\n    \n    # Apply PCA for dimensionality reduction\n    numerical_cols = df.select_dtypes(include(['float64', 'int64']).columns\n    if len(numerical_cols) > 10:\n        pca = PCA(n_components=10)\n        pca_result = pca.fit.transform(df[numerical_cols])\n        for i in range(10):\n            df[f'pca_{i+1}'] = pca_result[:, i]\n    \n    return df\n\ndef train_model(X, y):\n    # Split data\n    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n    \n    # Train model\n    model = GradientBoostingClassifier(n_estimators=200, learning_rate=0.1)\n    model.fit(X_train, y_train)\n    \n    # Evaluate\n    accuracy = model.score(X.test, y.test)\n    \n    return model, accuracy\n\n# Main pipeline execution\ndef run_pipeline(data_path, target_col):\n    # Load data\n    df = load_data(data_path)\n    \n    # Preprocess\n    df_processed = preprocess(df)\n    \n    # Advanced feature engineering\n    df_engineered = engineer_features_advanced(df_processed)\n    \n    # Split features and target\n    X = df_engineered.drop(target_col, axis=1)\n    y = df.engineered[target_col]\n    \n    # Train model\n    model, accuracy = train_model(X, y)\n    \n    print(f\"Model trained with accuracy: {accuracy:.4f}\")\n    return model, accuracy",
       },
       {
         id: "code-4",
@@ -123,9 +124,12 @@ export default function MLAgentPage() {
   const [agentActivities, setAgentActivities] = useState<any[]>([])
   const [currentMetricData, setCurrentMetricData] = useState<number[]>([])
   const [currentActivityIndex, setCurrentActivityIndex] = useState<number>(-1)
-  const [availableLoopCounts, setAvailableLoopCounts] = useState<number[]>([]);
-  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
-  const [threadId, setThreadId] = useState<string | undefined>(undefined);
+  const [availableLoopCounts, setAvailableLoopCounts] = useState<number[]>([])
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined)
+  const [threadId, setThreadId] = useState<string | undefined>(undefined)
+
+  // Get the pathname for route handling
+  const pathname = usePathname()
 
   // Auto-scroll to the bottom of messages when new messages are added
   useEffect(() => {
@@ -136,10 +140,10 @@ export default function MLAgentPage() {
   useEffect(() => {
     if (availableLoopCounts.length > 0) {
       // Convert loop counts to string versions (e.g., "0", "1", "2")
-      const versionStrings = availableLoopCounts.map(count => count.toString());
-      setAvailableVersions(versionStrings);
+      const versionStrings = availableLoopCounts.map((count) => count.toString())
+      setAvailableVersions(versionStrings)
     }
-  }, [availableLoopCounts]);
+  }, [availableLoopCounts])
 
   // Update metrics data when a new metric is added
   useEffect(() => {
@@ -148,6 +152,32 @@ export default function MLAgentPage() {
       setCurrentMetricData(latestMetric.accuracies)
     }
   }, [readyArtifacts.metrics])
+
+  // Check for thread ID in URL on component mount
+  useEffect(() => {
+    // Check if we're on a saved thread route
+    console.log(pathname);
+    if (pathname && pathname.startsWith("/savedThread/")) {
+      const urlThreadId = pathname.split("/savedThread/")[1]
+      console.log(urlThreadId);
+      if (urlThreadId) {
+        // Set the thread ID from URL
+        setThreadId(urlThreadId)
+
+        // Add a system message explaining we're resuming a saved thread
+        setMessages([
+          {
+            role: "agent",
+            content: "Resuming your previous ML workflow. The agent will continue where you left off.",
+            timestamp: new Date(),
+          },
+        ])
+
+        // Start the agent with the saved thread ID
+        startAgentWithThread(urlThreadId)
+      }
+    }
+  }, [pathname])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -328,14 +358,43 @@ export default function MLAgentPage() {
   const startAgent = () => {
     if (!readyToStart) return
 
+    // If we have a thread ID, use it, otherwise start a new one
+    if (threadId) {
+      startAgentWithThread(threadId)
+    } else {
+      // Delete existing metrics when starting a new agent run
+      deleteMetric()
+
+      setIsAgentRunning(true)
+      setIsStreaming(true)
+      setAgentActivities([])
+      setCurrentActivityIndex(0)
+      setCurrentMetricData([])
+
+      // Reset ready artifacts
+      setReadyArtifacts({
+        code: [],
+        models: [],
+        metrics: [],
+      })
+
+      // Reset available versions
+      setAvailableVersions([])
+      setSelectedVersion("")
+    }
+  }
+
+  // Modified function to start agent with a specific thread ID
+  const startAgentWithThread = (threadId: string) => {
     // Delete existing metrics when starting a new agent run
     deleteMetric()
-    
+
     setIsAgentRunning(true)
     setIsStreaming(true)
     setAgentActivities([])
     setCurrentActivityIndex(0)
     setCurrentMetricData([])
+    setThreadId(threadId)
 
     // Reset ready artifacts
     setReadyArtifacts({
@@ -410,7 +469,7 @@ export default function MLAgentPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white">
         <div className="w-full max-w-3xl flex flex-col items-center">
-          <ChatUI 
+          <ChatUI
             messages={messages}
             userMessage={userMessage}
             setUserMessage={setUserMessage}
@@ -422,7 +481,8 @@ export default function MLAgentPage() {
             messagesEndRef={messagesEndRef as React.RefObject<HTMLDivElement>}
             setReadyToStart={function (ready: boolean): void {
               throw new Error("Function not implemented.")
-            } }          />
+            }}
+          />
         </div>
       </div>
     )
@@ -432,7 +492,7 @@ export default function MLAgentPage() {
   return (
     <div className="flex flex-col h-screen bg-[#f9f9f9]">
       {/* Header with task summary */}
-      <AgentHeader 
+      <AgentHeader
         taskDescription={taskDescription}
         filesCount={files.length}
         progress={progress}
@@ -446,29 +506,31 @@ export default function MLAgentPage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-full">
             {/* Left pane: Agent progress */}
             <div className="flex flex-col h-full md:col-span-5">
-              {threadId && <AgentProgress 
-                threadId={threadId}
-                startAgent={startAgent}
-                agentActivities={agentActivities}
-                setAgentActivities={setAgentActivities}
-                isStreaming={isStreaming}
-                setIsStreaming={setIsStreaming}
-                currentActivityIndex={currentActivityIndex}
-                setCurrentActivityIndex={setCurrentActivityIndex}
-                expandedActivities={expandedActivities}
-                toggleActivityExpand={toggleActivityExpand}
-                handleArtifactLink={handleArtifactLink}
-                activityStreamEndRef={activityStreamEndRef as React.RefObject<HTMLDivElement>}
-                setProgress={setProgress}
-                setReadyArtifacts={setReadyArtifacts}
-                setAvailableLoopCounts={setAvailableLoopCounts}
-                setSessionId={setSessionId}
-                setSelectedVersion={setSelectedVersion}
-              />}   
+              {threadId && (
+                <AgentProgress
+                  threadId={threadId}
+                  startAgent={startAgent}
+                  agentActivities={agentActivities}
+                  setAgentActivities={setAgentActivities}
+                  isStreaming={isStreaming}
+                  setIsStreaming={setIsStreaming}
+                  currentActivityIndex={currentActivityIndex}
+                  setCurrentActivityIndex={setCurrentActivityIndex}
+                  expandedActivities={expandedActivities}
+                  toggleActivityExpand={toggleActivityExpand}
+                  handleArtifactLink={handleArtifactLink}
+                  activityStreamEndRef={activityStreamEndRef as React.RefObject<HTMLDivElement>}
+                  setProgress={setProgress}
+                  setReadyArtifacts={setReadyArtifacts}
+                  setAvailableLoopCounts={setAvailableLoopCounts}
+                  setSessionId={setSessionId}
+                  setSelectedVersion={setSelectedVersion}
+                />
+              )}
             </div>
             {/* Right pane: Artifacts */}
             <div className="flex flex-col h-full md:col-span-7">
-              <AgentArtifacts 
+              <AgentArtifacts
                 availableVersions={availableVersions}
                 selectedVersion={selectedVersion}
                 setSelectedVersion={setSelectedVersion}
@@ -485,7 +547,7 @@ export default function MLAgentPage() {
                 sessionId={sessionId}
                 onMetricUpdate={(metricValue) => {
                   // Update the currentMetricData array with the new metric
-                  setCurrentMetricData(prevMetrics => [...prevMetrics, metricValue]);
+                  setCurrentMetricData((prevMetrics) => [...prevMetrics, metricValue])
                 }}
               />
             </div>
