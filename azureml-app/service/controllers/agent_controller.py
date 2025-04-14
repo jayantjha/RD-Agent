@@ -5,7 +5,7 @@ from logger import logger
 from azure.ai.projects.aio import AIProjectClient
 from services.job_service import JobParameters, submit_aml_job
 from azure.identity.aio import DefaultAzureCredential
-from config import PROJECT_CONNECTION_STRING, MODEL_DEPLOYMENT_NAME, AGENT_ID
+from config import FAKE_JOB, FAKE_THREAD_ID, PROJECT_CONNECTION_STRING, MODEL_DEPLOYMENT_NAME, AGENT_ID
 
 router = APIRouter()
 
@@ -20,6 +20,10 @@ async def execute_agent(request: AgentRequest):
             raise HTTPException(status_code=400, detail="data_uri must not be empty")
 
         logger.info("Agent execution logic would go here")
+
+        thread_id = FAKE_THREAD_ID
+        agentid = AGENT_ID
+
         async with DefaultAzureCredential() as creds:
             async with AIProjectClient.from_connection_string(
                 credential=creds, conn_str=PROJECT_CONNECTION_STRING
@@ -31,19 +35,22 @@ async def execute_agent(request: AgentRequest):
                 #     instructions="You are helpful assistant"
                 # )
                 # logger.info(f"Created agent, agent ID: {agent.id}")
-                agentid = AGENT_ID
-                thread = await project_client.agents.create_thread()
-                logger.info(f"Created thread, thread ID: {thread.id}")
 
-                # Instantiate the JobParameters class
-                job_params = JobParameters(
-                    agent_id=agentid,
-                    thread_id=thread.id,
-                    user_prompt=request.user_prompt,
-                    data_uri=request.data_uri,
-                    project_conn_string=PROJECT_CONNECTION_STRING
-                )
-                submit_aml_job(job_params)
+                if not FAKE_JOB:
+                    thread = await project_client.agents.create_thread()
+                    
+                    logger.info(f"Created thread, thread ID: {thread.id}")
+
+                    # Instantiate the JobParameters class
+                    job_params = JobParameters(
+                        agent_id=agentid,
+                        thread_id=thread.id,
+                        user_prompt=request.user_prompt,
+                        data_uri=request.data_uri,
+                        project_conn_string=PROJECT_CONNECTION_STRING
+                    )
+                    submit_aml_job(job_params)
+                    thread_id = thread.id
 
                 # TO BE HANDLED LATER
 
@@ -72,7 +79,7 @@ async def execute_agent(request: AgentRequest):
             content={
                 "status": "Agent task submitted",
                 "agent_id": agentid,
-                "thread_id": thread.id,
+                "thread_id": thread_id,
             }
 )
 

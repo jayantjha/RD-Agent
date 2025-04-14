@@ -125,6 +125,7 @@ export default function MLAgentPage() {
   const [currentActivityIndex, setCurrentActivityIndex] = useState<number>(-1)
   const [availableLoopCounts, setAvailableLoopCounts] = useState<number[]>([]);
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+  const [threadId, setThreadId] = useState<string | undefined>(undefined);
 
   // Auto-scroll to the bottom of messages when new messages are added
   useEffect(() => {
@@ -154,8 +155,10 @@ export default function MLAgentPage() {
     }
   }
 
-  const handleSendMessage = () => {
+  const handleSendMessage = (threadId: string) => {
     if (!userMessage.trim() && !readyToStart) return
+    if (threadId)
+      setThreadId(threadId)
 
     // If we're ready to start and the user clicks the button, add a confirmation message
     if (readyToStart && !userMessage) {
@@ -443,7 +446,8 @@ export default function MLAgentPage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-full">
             {/* Left pane: Agent progress */}
             <div className="flex flex-col h-full md:col-span-5">
-              <AgentProgress 
+              {threadId && <AgentProgress 
+                threadId={threadId}
                 startAgent={startAgent}
                 agentActivities={agentActivities}
                 setAgentActivities={setAgentActivities}
@@ -460,7 +464,7 @@ export default function MLAgentPage() {
                 setAvailableLoopCounts={setAvailableLoopCounts}
                 setSessionId={setSessionId}
                 setSelectedVersion={setSelectedVersion}
-              />   
+              />}   
             </div>
             {/* Right pane: Artifacts */}
             <div className="flex flex-col h-full md:col-span-7">

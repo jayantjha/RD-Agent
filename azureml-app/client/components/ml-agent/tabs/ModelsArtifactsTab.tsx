@@ -12,9 +12,8 @@ interface ModelsArtifactsTabProps {
   artifactRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>;
   manifestData: any | null;
   formatSizeInMB: (sizeInBytes: number) => string;
+  sessionId: string | undefined;
 }
-
-const SESSION_ID = "a40ea1b4-22bc-43a9-975d-78bffb0c1d43";
 
 
 export function ModelsArtifactsTab({
@@ -22,6 +21,7 @@ export function ModelsArtifactsTab({
   artifactRefs,
   manifestData,
   formatSizeInMB,
+  sessionId,
 }: ModelsArtifactsTabProps) {
   // Filter models artifacts as before
   const modelArtifacts = getFilteredArtifacts("models");
@@ -34,7 +34,7 @@ export function ModelsArtifactsTab({
     readmeFilePath = `${manifestData.workspace_path}/${readmeFile.name}`;
   }
   
-  const { data: fileContent, isLoading, error } = useFileContent(SESSION_ID, readmeFilePath);
+  const { data: fileContent, isLoading, error } = useFileContent(sessionId, readmeFilePath);
 
   return (
     <div className="space-y-4">

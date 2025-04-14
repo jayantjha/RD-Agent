@@ -10,6 +10,7 @@ import { startEventStream, stopEventStream } from "@/lib/streamManager"
 import { getApiUrl } from "@/lib/config/index"
 
 interface AgentProgressProps {
+  threadId: string,
   agentActivities: any[],
   setAgentActivities: React.Dispatch<React.SetStateAction<any[]>>,
   startAgent(): void,
@@ -33,6 +34,7 @@ interface AgentProgressProps {
 }
 
 export function AgentProgress({
+  threadId,
   agentActivities,
   setAgentActivities,
   expandedActivities,
@@ -190,7 +192,7 @@ export function AgentProgress({
   }
 
   useEffect(() => {
-    if (isStreaming) startEventStream("thread_7PXFL9qSS34jomDZghSiyWNX", processAgentActivity, handleStreamError);
+    if (isStreaming) startEventStream(threadId, processAgentActivity, handleStreamError);
     return () => stopEventStream();
   }, [isStreaming]);
 

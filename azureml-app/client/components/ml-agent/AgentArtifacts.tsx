@@ -250,6 +250,7 @@ export function AgentArtifacts({
                 artifactRefs={artifactRefs}
                 manifestData={parsedManifest}
                 formatSizeInMB={formatSizeInMB}
+                sessionId={sessionId}
               />
             </TabsContent>
 
