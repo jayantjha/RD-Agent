@@ -74,7 +74,7 @@ export function AgentProgress({
   const processAgentActivity = (data: any) => {
     
     // Ignore list for specific task types
-    const ignoreList = ["FILE_MODIFIED", "MANIFEST_CREATED"];
+    const ignoreList = ["FILE_MODIFIED", "MANIFEST_CREATED", "RECORD"];
     
     // Skip processing if the task is in the ignore list
     if (ignoreList.includes(data.task)) {
