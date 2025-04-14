@@ -333,6 +333,8 @@ def main(
         dotenv run -- python rdagent/app/data_science/loop.py [--competition titanic] $LOG_PATH/__session__/1/0_propose  --step_n 1   # `step_n` is a optional parameter
         rdagent kaggle --competition playground-series-s4e8  # You are encouraged to use this one.
     """
+    publish_trace("DS_LOOP", TaskStatus.STARTED, "data science loop started")
+
     if competition is not None:
         DS_RD_SETTING.competition = competition
 
