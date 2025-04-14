@@ -54,10 +54,10 @@ export function AgentProgress({
   const [loopCounts, setLoopCounts] = useState<Set<number>>(new Set());
 
   // Event mappings
-  const mappings: Record<string, string> = {
-    "DS_LOOP": "ML Agent",
-    "DS_SCENARIO": "Understanding data and requirements",
-    "RDLOOP": "Main R & D loop",
+  const event_mappings: Record<string, string> = {
+    "DS_LOOP": "Starting ML agent for task",
+    "DS_SCENARIO": "Loading and analyzing requirements and datasets",
+    "RDLOOP": "Hypothesis generation and coding loop",
     "CODING": "Coder agent",
     "EXPERIMENT_GENERATION": "Generating experiment for the loop",
     "DATA_LOADING": "Code for loading data",
@@ -67,8 +67,9 @@ export function AgentProgress({
     "WORKFLOW_TASK": "Developing workflow",
     "FEEDBACK": "Gathering feedback for the loop",
     "RECORD": "Recording results",
-    "DS_UPLOADED": "Generated main.py pipeline code and created Ensemble model. Code, model will be update in the workspace.",
-    "PIPELINE_TASK": "Running pipeline"
+    "DS_UPLOADED": "Generated main.py pipeline code",
+    "PIPELINE_TASK": "Running pipeline",
+    "RUNNING": "Executing and evaluating model"
   }
 
   const processAgentActivity = (data: any) => {
@@ -93,28 +94,33 @@ export function AgentProgress({
     const activity = {
       id: data.id || `activity-${Date.now()}`,
       timestamp: new Date(data.createdAt * 1000),
-      message: `${mappings[data.task] || data.task} - ${data.status.toLowerCase()}`,
-      shortDescription: data.shortDescription || "",
-      details: data.message || "No details provided",
+      message: `${event_mappings[data.task] || data.task}`,
+      shortDescription: data.message || "",
+      details: data.description || "No details provided",
       type: data.type || "info",
       artifactId: data.artifactId,
       artifactName: data.artifactName,
       version: data.loop_count !== undefined ? `v${data.loop_count}` : undefined,
       sessionId: data.session_id || undefined,
       status: data.status.toLowerCase() || "done",
-      loop_count: data.loop_count
+      loop_count: data.loop_count,
+      indent: 0,
     }
 
     // Update activities state
     setAgentActivities((prev) => {
-      // Mark all previous activities as done
-      const updatedActivities = prev.map((act) => ({
-        ...act,
-        // status: "done",
-      }))
+      if (prev.length == 0)
+        return [activity]
 
-      // Add the new activity
-      return [...updatedActivities, activity]
+      let lastActivity = prev[prev.length - 1]
+      let remaining = prev.slice(0, -1)
+    
+      if (lastActivity.message == activity.message) {
+        activity.indent = lastActivity.indent
+        return [...remaining, activity]
+      }
+
+      return [...prev, activity]
     })
 
     // Track unique loop_count values if present
@@ -184,7 +190,7 @@ export function AgentProgress({
   }
 
   useEffect(() => {
-    if (isStreaming) startEventStream("thread_YiwwvhKKkcHSeeTOqaExOsWt", processAgentActivity, handleStreamError);
+    if (isStreaming) startEventStream("thread_CuAMcI8U5J2YxrfrfWOKEdai", processAgentActivity, handleStreamError);
     return () => stopEventStream();
   }, [isStreaming]);
 
@@ -263,6 +269,7 @@ export function AgentProgress({
             {agentActivities.map((activity, index) => (
               <div
                 key={activity.id}
+                style={{marginLeft: `${activity.indent * 20}px`}}
                 className={`group border border-azure-border rounded-md p-3 hover:bg-azure-gray/30 transition-colors cursor-pointer bg-white ${
                   isStreaming && index === currentActivityIndex ? "border-azure-blue" : ""
                 }`}

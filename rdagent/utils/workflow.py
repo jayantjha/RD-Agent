@@ -104,6 +104,7 @@ class LoopBase:
             How many steps to run; if current loop is incomplete, it will be counted as the first loop for completion
             `None` indicates to run forever until error or KeyboardInterrupt
         """
+        publish_trace("RDLOOP", TaskStatus.STARTED, f"Started...")
         with tqdm(total=len(self.steps), desc="Workflow Progress", unit="step") as pbar: 
             while True:
                 if step_n is not None:
@@ -119,8 +120,7 @@ class LoopBase:
                 
                 logger.info(f"Start Loop {li}, Step {si}: {name}")
                 foundry.set_loop_count(li)
-                publish_trace("RDLOOP", TaskStatus.STARTED, f"Start Loop {li}, Step {si}: {name}")
-                
+                                
                 with logger.tag(f"Loop_{li}.{name}"):
                     start = datetime.datetime.now(datetime.timezone.utc)
                     func: Callable[..., Any] = cast(Callable[..., Any], getattr(self, name))
@@ -151,6 +151,7 @@ class LoopBase:
                 # index increase and save session
                 self.step_idx = (self.step_idx + 1) % len(self.steps)
                 if self.step_idx == 0:  # reset to step 0 in next round
+                    publish_trace("RDLOOP", TaskStatus.COMPLETED, f"Completed Loop {li}")
                     self.loop_idx += 1
                     if loop_n is not None:
                         loop_n -= 1
