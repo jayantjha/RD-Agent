@@ -134,6 +134,7 @@ interface AgentArtifactsProps {
   getFilteredArtifacts: (type: "code" | "models" | "metrics") => any[]
   getLatestMetric: () => any
   renderMetricsChart: (accuracies: number[]) => React.JSX.Element
+  sessionId?: string
 }
 
 export function AgentArtifacts({
@@ -151,8 +152,12 @@ export function AgentArtifacts({
   getFilteredArtifacts,
   getLatestMetric,
   renderMetricsChart,
+  sessionId,
 }: AgentArtifactsProps) {
-  const { data: manifestData, isLoading, error } = useManifestData(selectedVersion);
+  // Use React Query hook for manifest data, passing sessionId when available
+  const { data: manifestData, isLoading, error } = useManifestData(selectedVersion, sessionId || "");
+  
+  // Parse the JSON string from manifest data
   const parsedManifest = manifestData ? parseJSON(manifestData) : null;
   const runId = selectedVersion || undefined;
 
@@ -223,6 +228,7 @@ export function AgentArtifacts({
                 artifactRefs={artifactRefs}
                 manifestData={parsedManifest}
                 runId={runId}
+                sessionId={sessionId}
               />
             </TabsContent>
 
