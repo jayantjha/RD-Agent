@@ -15,6 +15,7 @@ interface CodeArtifactsTabProps {
   artifactRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>
   manifestData: any
   runId: string | undefined
+  sessionId: string | undefined
 }
 
 export function CodeArtifactsTab({
@@ -24,6 +25,7 @@ export function CodeArtifactsTab({
   artifactRefs,
   manifestData,
   runId,
+  sessionId,
 }: CodeArtifactsTabProps) {
   // const codeFiles = getFilteredArtifacts("code");
   // const selectedFile = codeFiles.find(file => file.id === selectedCodeFile);
@@ -32,7 +34,6 @@ export function CodeArtifactsTab({
     name: "main.py"
   };
   // Constants
-  const SESSION_ID = "0ff86955-de91-4f59-b21a-cb4367cd912e";
   const codeFiles = [{
     id: "",
     name: "main.py"
@@ -44,8 +45,8 @@ export function CodeArtifactsTab({
     ? `${manifestData.workspace_path}/${selectedFile.name}`
     : undefined;
     console.log(filePath);
-  // Fetch file content using our new hook
-  const { data: fileContent, isLoading, error } = useFileContent(SESSION_ID, filePath);
+  // Fetch file content using our new hook with the sessionId from props
+  const { data: fileContent, isLoading, error } = useFileContent(sessionId, filePath);
   
   // If no file is selected and we have files, select the first one
   useEffect(() => {

@@ -1,47 +1,221 @@
 "use client"
 
-import React, { useState, useRef } from "react"
-import { Bot, FileCode, BarChart3, Database, ArrowRight, CheckCircle2, XCircle, Loader2, Clock } from "lucide-react"
+import React, { useEffect, useState } from "react"
+import { Bot, FileCode, BarChart3, Database, Play, RefreshCcw, ArrowRight, CheckCircle2, XCircle, Loader2, Clock } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
+import { startEventStream, stopEventStream } from "@/lib/streamManager"
+import { getApiUrl } from "@/lib/config/index"
 
 interface AgentProgressProps {
   agentActivities: any[],
+  setAgentActivities: React.Dispatch<React.SetStateAction<any[]>>,
   startAgent(): void,
   expandedActivities: Record<string, boolean>
   toggleActivityExpand: (activityId: string) => void
   handleArtifactLink: (artifactId: string | undefined, version: string) => void
   isStreaming: boolean
+  setIsStreaming: React.Dispatch<React.SetStateAction<boolean>>
   currentActivityIndex: number
+  setCurrentActivityIndex: React.Dispatch<React.SetStateAction<number>>
   activityStreamEndRef: React.RefObject<HTMLDivElement>
+  setProgress: React.Dispatch<React.SetStateAction<number>>
+  setReadyArtifacts: React.Dispatch<React.SetStateAction<{
+    code: string[];
+    models: string[];
+    metrics: string[];
+  }>>
+  setAvailableLoopCounts: React.Dispatch<React.SetStateAction<number[]>>
+  setSessionId: React.Dispatch<React.SetStateAction<string | undefined>>
+  setSelectedVersion: React.Dispatch<React.SetStateAction<string>>
 }
 
 export function AgentProgress({
   agentActivities,
+  setAgentActivities,
   expandedActivities,
   toggleActivityExpand,
   handleArtifactLink,
   isStreaming,
+  setIsStreaming,
   startAgent,
   currentActivityIndex,
+  setSelectedVersion,
+  setCurrentActivityIndex,
   activityStreamEndRef,
+  setProgress,
+  setReadyArtifacts,
+  setAvailableLoopCounts,
+  setSessionId,
 }: AgentProgressProps) {
+  // Maintain a local state for tracking unique loop_count values
+  const [loopCounts, setLoopCounts] = useState<Set<number>>(new Set());
+
+  // Event mappings
+  const mappings: Record<string, string> = {
+    "DS_LOOP": "ML Agent",
+    "DS_SCENARIO": "Understanding data and requirements",
+    "RDLOOP": "Main R & D loop",
+    "CODING": "Coder agent",
+    "EXPERIMENT_GENERATION": "Generating experiment for the loop",
+    "DATA_LOADING": "Code for loading data",
+    "FEATURE_TASK": "Code for feature engineering",
+    "MODEL_TASK": "Code for hypothesized model",
+    "ENSEMBLE_TASK": "Generating ensemble model",
+    "WORKFLOW_TASK": "Developing workflow",
+    "FEEDBACK": "Gathering feedback for the loop",
+    "RECORD": "Recording results",
+    "DS_UPLOADED": "Generated main.py pipeline code and created Ensemble model. Code, model will be update in the workspace.",
+    "PIPELINE_TASK": "Running pipeline"
+  }
+
+  const processAgentActivity = (data: any) => {
+    
+    // Ignore list for specific task types
+    const ignoreList = ["FILE_MODIFIED", "MANIFEST_CREATED"];
+    
+    // Skip processing if the task is in the ignore list
+    if (ignoreList.includes(data.task)) {
+      return;
+    }
+    
+    // Check if this is a DS_SCENARIO with STARTED status to extract session ID
+    if (data.task === "DS_SCENARIO" && data.status === "STARTED" && data.session_id) {
+      setSessionId(data.session_id);
+    }
+
+    if (data.task === "DS_UPLOADED" && data.status === "COMPLETED" && data.loop_count !== undefined) {
+      setSelectedVersion(data.loop_count.toString());
+    }
+    
+    const activity = {
+      id: data.id || `activity-${Date.now()}`,
+      timestamp: new Date(data.createdAt * 1000),
+      message: `${mappings[data.task] || data.task} - ${data.status.toLowerCase()}`,
+      shortDescription: data.shortDescription || "",
+      details: data.message || "No details provided",
+      type: data.type || "info",
+      artifactId: data.artifactId,
+      artifactName: data.artifactName,
+      version: data.loop_count !== undefined ? `v${data.loop_count}` : undefined,
+      sessionId: data.session_id || undefined,
+      status: data.status.toLowerCase() || "done",
+      loop_count: data.loop_count
+    }
+
+    // Update activities state
+    setAgentActivities((prev) => {
+      // Mark all previous activities as done
+      const updatedActivities = prev.map((act) => ({
+        ...act,
+        // status: "done",
+      }))
+
+      // Add the new activity
+      return [...updatedActivities, activity]
+    })
+
+    // Track unique loop_count values if present
+    if (data.loop_count !== undefined) {
+      setLoopCounts(prevLoopCounts => {
+        const newLoopCounts = new Set(prevLoopCounts);
+        newLoopCounts.add(data.loop_count);
+        
+        // Update parent component with the current set of loop counts
+        const sortedLoopCounts = Array.from(newLoopCounts).sort((a, b) => a - b);
+        setAvailableLoopCounts(sortedLoopCounts);
+        
+        return newLoopCounts;
+      });
+    }
+
+    // Update current activity index
+    setCurrentActivityIndex((prev) => prev + 1)
+    
+    // Calculate progress (approximation since we don't know total number)
+    setProgress((prevProgress) => Math.min(100, prevProgress + 5))
+
+    // Update ready artifacts when an artifact is created
+    // if (activity.artifactId) {
+    //   if (activity.artifactId.startsWith("code")) {
+    //     setReadyArtifacts((prev) => ({
+    //       ...prev,
+    //       code: [...prev.code, activity.artifactId!],
+    //     }))
+    //   } else if (activity.artifactId.startsWith("model")) {
+    //     setReadyArtifacts((prev) => ({
+    //       ...prev,
+    //       models: [...prev.models, activity.artifactId!],
+    //     }))
+    //   } else if (activity.artifactId.startsWith("metric")) {
+    //     setReadyArtifacts((prev) => ({
+    //       ...prev,
+    //       metrics: [...prev.metrics, activity.artifactId!],
+    //     }))
+    //   }
+    // }
+
+    // // If the message indicates completion, end the streaming
+    // if (activity.type === "complete") {
+    //   setIsStreaming(false)
+    //   setCurrentActivityIndex(-1)
+    // }
+  }
+
+  // Handle errors from event stream
+  const handleStreamError = (error: any) => {
+    console.error('Stream connection error:', error);
+    
+    // Optionally add an error activity to show the user
+    setAgentActivities((prev) => [
+      ...prev,
+      {
+        id: `error-${Date.now()}`,
+        timestamp: new Date(),
+        message: "Connection error",
+        shortDescription: "Lost connection to the agent",
+        details: "The connection to the agent was lost. It may still be running in the background.",
+        type: "info",
+        status: "failed",
+      }
+    ]);
+  }
+
+  useEffect(() => {
+    if (isStreaming) startEventStream("thread_YiwwvhKKkcHSeeTOqaExOsWt", processAgentActivity, handleStreamError);
+    return () => stopEventStream();
+  }, [isStreaming]);
+
+  // Auto-scroll to the bottom of the activity stream when new activities are added
+  // useEffect(() => {
+  //   if (agentActivities.length > 0 && isStreaming) {
+  //     activityStreamEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  //   }
+  // }, [agentActivities, isStreaming])
+
   const getActivityIcon = (type: string, status: string, index: number) => {
     // If this is the current activity and we're streaming, show loading icon
-    if (isStreaming && index === currentActivityIndex) {
-      return <Loader2 className="h-4 w-4 animate-spin text-azure-blue" />
-    }
+    // if (isStreaming && index === currentActivityIndex) {
+    //   return <Loader2 className="h-4 w-4 animate-spin text-azure-blue" />
+    // }
 
     // Otherwise, show status icon
     if (status === "failed") {
       return <XCircle className="h-4 w-4 text-red-500" />
     }
 
-    if (status === "done") {
+    if (status === "completed") {
       return <CheckCircle2 className="h-4 w-4 text-green-500" />
+    }
+
+    if (status === "started") {
+      return <Play className="h-4 w-4 text-green-500" />
+    }
+
+    if (status === "in_progress") {
+      return <RefreshCcw className="h-4 w-4 text-green-500" />
     }
 
     // Default icons based on type
@@ -67,12 +241,6 @@ export function AgentProgress({
         <CardTitle className="text-lg font-semibold text-azure-dark-blue">Agent Activity</CardTitle>
         <CardDescription className="text-gray-600">Live stream of the agent's actions and progress</CardDescription>
       </CardHeader>
-      {/* <Button
-        className="bg-azure-blue text-white hover:bg-azure-dark-blue"
-        onClick={() => startAgent()}
-    >
-        Start Agent Run
-    </Button> */}
       <CardContent className="flex-1 overflow-hidden bg-white p-4">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-medium text-gray-700">Activity Stream</h3>
@@ -119,7 +287,9 @@ export function AgentProgress({
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-gray-800">{activity.message}</p>
-                          <Badge className="bg-azure-gray text-gray-700 text-xs font-normal">{activity.version}</Badge>
+                          {
+                            activity.version && <Badge className="bg-azure-gray text-gray-700 text-xs font-normal">{activity.version}</Badge>
+                          }
 
                           {/* Artifact link as text */}
                           {activity.artifactId && (
