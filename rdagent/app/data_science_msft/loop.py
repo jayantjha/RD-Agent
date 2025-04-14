@@ -119,7 +119,7 @@ class DataScienceV2RDLoop(DataScienceRDLoop):
         if not self.manifest:
             self.manifest = Manifest(
                 loop_id=self.loop_idx, step_name=self.steps[self.step_idx])
-
+        self.manifest.step_name = step_name
         if isinstance(exp, HypothesisFeedback):
             self.manifest.feedback = exp
         if hasattr(exp, "hypothesis") and exp.hypothesis:
