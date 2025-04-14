@@ -17,7 +17,7 @@ from rdagent.scenarios.data_science.experiment.experiment import DSExperiment
 
 from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
-
+from rdagent.utils.foundry_agent import TaskStatus, publish_trace, foundry
 from rdagent.scenarios.kaggle.kaggle_crawler import download_data
 import uuid
 import time
@@ -180,6 +180,8 @@ class DataScienceV2RDLoop(DataScienceRDLoop):
         if not DS_RD_SETTING.log_experiment:
             return
         self._log_object(exp, "experiment", step_name)
+        publish_trace("EXPERIMENT_LOGGED", TaskStatus.COMPLETED, f"Experiment logged for loop {self.loop_idx}, step {step_name}")
+        
 
     def _log_object(
         self, obj: object, name: str, step_name: str, path: Optional[Path] = None
@@ -218,6 +220,19 @@ class FolderWatcher(FileSystemEventHandler):
         )
         self.folder_path = Path(folder_path)
 
+        try:
+            self.container_client.upload_blob(
+                name=f"sessions/{self.session_id}/test.txt", 
+                data="this is test", 
+                overwrite=True,
+                content_type="text/plain"
+            )
+            logger.info(f"Uploaded test")
+        except Exception as e:
+           return
+
+
+
     def on_modified(self, event):
         if event.is_directory:
             return
@@ -249,6 +264,8 @@ class FolderWatcher(FileSystemEventHandler):
                 logger.info(
                     f"Uploaded {file_path} to blob storage as {blob_name} with content type {content_type}"
                 )
+                if file_path.name == "main.py":
+                    publish_trace("DS_UPLOADED", TaskStatus.COMPLETED, f"Uploaded {file_path} to blob storage as {blob_name}")
         except Exception as e:
             return
 
@@ -316,6 +333,8 @@ def main(
         dotenv run -- python rdagent/app/data_science/loop.py [--competition titanic] $LOG_PATH/__session__/1/0_propose  --step_n 1   # `step_n` is a optional parameter
         rdagent kaggle --competition playground-series-s4e8  # You are encouraged to use this one.
     """
+    publish_trace("DS_LOOP", TaskStatus.STARTED, "Initializing environment and loading depedencies")
+
     if competition is not None:
         DS_RD_SETTING.competition = competition
 
@@ -343,6 +362,7 @@ def main(
 
 def initialize_session():
     DS_RD_SETTING.session_id = str(uuid.uuid4())
+    foundry.set_session_id(DS_RD_SETTING.session_id)
     DS_RD_SETTING.session_path = (
         f"{DS_RD_SETTING.session_root_path}/{DS_RD_SETTING.session_id}"
     )

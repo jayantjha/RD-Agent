@@ -32,7 +32,8 @@ class FoundryAgent:
     def __init__(self):
         if not self._initialized:
             self._project_client = None
-            self._loop_count = 0
+            self._loop_count = None
+            self._session_id = None
             self._initialized = True
     
     @property
@@ -43,6 +44,15 @@ class FoundryAgent:
     def set_loop_count(self, count: int) -> None:
         """Set the loop count to a specific value."""
         self._loop_count = count
+
+    @property
+    def session_id(self) -> Optional[str]:
+        """Get the current session ID."""
+        return self._session_id
+    
+    def set_session_id(self, session_id: str) -> None:
+        """Set the session ID to a specific value."""
+        self._session_id = session_id
     
     def get_project_client(self):
         """
@@ -72,7 +82,6 @@ class FoundryAgent:
             status: TaskStatus, 
             message_content: str, 
             description: str = None, 
-            details: str = None, 
             **kwargs) -> None:
         """
         Sends a message to the thread associated with this logger.
@@ -82,7 +91,6 @@ class FoundryAgent:
             status: The task status
             message_content: The content of the message to send
             description: Optional description
-            details: Optional details
             kwargs: Additional parameters to include in the payload
         """
         try:
@@ -92,14 +100,15 @@ class FoundryAgent:
             payload_dict = {
                 "task": task, 
                 "status": status.value, 
-                "message": message_content,
-                "loop_count": self._loop_count
+                "message": message_content
             }
 
+            if self.loop_count is not None:
+                payload_dict["loop_count"] = self.loop_count
             if description:
                 payload_dict["description"] = description
-            if details:
-                payload_dict["details"] = details
+            if self.session_id:
+                payload_dict["session_id"] = self.session_id
             if kwargs:
                 payload_dict.update(kwargs)
             
@@ -137,8 +146,7 @@ class FoundryAgent:
             payload = json.dumps({
                 "type": "approval", 
                 "requestId": request_id, 
-                "message": message_content,
-                "loop_count": self._loop_count
+                "message": message_content
             })
             
             with self.get_project_client() as project_client:
@@ -175,9 +183,8 @@ def publish_trace(
         status: TaskStatus, 
         message_content: str, 
         description: str = None, 
-        details: str = None, 
         **kwargs) -> None:
-    foundry.publish_trace(task, status, message_content, description, details, **kwargs)
+    foundry.publish_trace(task, status, message_content, description, **kwargs)
 
 def get_manual_approval(message_content: str) -> bool:
     return foundry.get_manual_approval(message_content)

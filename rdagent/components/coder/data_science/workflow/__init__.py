@@ -83,7 +83,7 @@ class WorkflowMultiProcessEvolvingStrategy(MultiProcessEvolvingStrategy):
                 APIBackend().build_messages_and_create_chat_completion(
                     user_prompt=user_prompt,
                     system_prompt=system_prompt,
-                    agent_name="CoderAgent",
+                    # agent_name="CoderAgent",
                 )
             )
             if workflow_code != workspace.file_dict.get("main.py"):

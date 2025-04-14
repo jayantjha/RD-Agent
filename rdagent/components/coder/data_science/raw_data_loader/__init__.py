@@ -157,7 +157,7 @@ class DataLoaderMultiProcessEvolvingStrategy(MultiProcessEvolvingStrategy):
                 APIBackend().build_messages_and_create_chat_completion(
                     user_prompt=user_prompt,
                     system_prompt=system_prompt,
-                    agent_name="CoderAgent"
+                    # agent_name="CoderAgent"
                 )
             )
             if data_loader_code != workspace.file_dict.get("load_data.py"):
