@@ -4,7 +4,7 @@
 import { API_CONFIG } from '../config';
 
 // Constants
-const SESSION_ID = "0ff86955-de91-4f59-b21a-cb4367cd912e";
+const SESSION_ID = "a40ea1b4-22bc-43a9-975d-78bffb0c1d43";
 
 /**
  * Fetches manifest data for a specific version (loop)

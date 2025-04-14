@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Shield, Rocket, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useFileContent } from "@/lib/queries/useFileContent";
+import ReactMarkdown from "react-markdown";
+import 'github-markdown-css/github-markdown.css';
 
 interface ModelsArtifactsTabProps {
   getFilteredArtifacts: (type: "code" | "models" | "metrics") => any[];
@@ -10,6 +13,9 @@ interface ModelsArtifactsTabProps {
   manifestData: any | null;
   formatSizeInMB: (sizeInBytes: number) => string;
 }
+
+const SESSION_ID = "a40ea1b4-22bc-43a9-975d-78bffb0c1d43";
+
 
 export function ModelsArtifactsTab({
   getFilteredArtifacts,
@@ -22,12 +28,20 @@ export function ModelsArtifactsTab({
   
   // Extract model information from manifest data
   const modelInfo = manifestData?.model;
+  const readmeFile = manifestData?.files.find((file: { name: string; }) => file.name === "README.md");
+  let readmeFilePath;
+  if (readmeFile) {
+    readmeFilePath = `${manifestData.workspace_path}/${readmeFile.name}`;
+  }
+  
+  const { data: fileContent, isLoading, error } = useFileContent(SESSION_ID, readmeFilePath);
+
   console.log(modelInfo);
   return (
     <div className="space-y-4">
-      {/* Display model information from manifest if available */}
+      {/* First row: Display model information from manifest if available */}
       {modelInfo && (
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center">
           <Card className="w-96 border-azure-border shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-semibold flex items-center">
@@ -66,8 +80,30 @@ export function ModelsArtifactsTab({
         </div>
       )}
 
-      {/* Display existing model artifacts */}
-      {!modelInfo && (
+      {/* Second row: Display README content if available */}
+      {fileContent && (
+         <div className="markdown-body">
+         <ReactMarkdown>{fileContent}</ReactMarkdown>
+         {/* <pre className="bg-gray-100 p-4 rounded-md overflow-auto">
+           {fileContent || ''}
+         </pre> */}
+       </div>
+        // <div className="flex justify-center">
+        //   <Card className="w-full max-w-4xl border-azure-border shadow-sm">
+        //     <CardContent>
+        //       <div className="markdown-body">
+        //         <ReactMarkdown>{fileContent}</ReactMarkdown>
+        //         {/* <pre className="bg-gray-100 p-4 rounded-md overflow-auto">
+        //           {fileContent || ''}
+        //         </pre> */}
+        //       </div>
+        //     </CardContent>
+        //   </Card>
+        // </div>
+      )}
+
+      {/* Display message if no model information is available */}
+      {!modelInfo && !fileContent && (
         <div className="text-center p-6 text-gray-500 bg-azure-gray/20 rounded-md border border-azure-border flex flex-col items-center">
           <Shield className="h-12 w-12 text-azure-blue/30 mb-2" />
           <p>No models available yet</p>

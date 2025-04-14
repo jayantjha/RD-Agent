@@ -32,7 +32,7 @@ export function CodeArtifactsTab({
     name: "main.py"
   };
   // Constants
-  const SESSION_ID = "0ff86955-de91-4f59-b21a-cb4367cd912e";
+  const SESSION_ID = "a40ea1b4-22bc-43a9-975d-78bffb0c1d43";
   const codeFiles = [{
     id: "",
     name: "main.py"

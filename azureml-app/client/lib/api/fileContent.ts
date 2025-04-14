@@ -6,7 +6,7 @@
  */
 export async function fetchFileContent(runId: string, filePath: string): Promise<string> {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/data/file/${runId}?path=${encodeURIComponent(filePath)}`);
+    const response = await fetch(`http://127.0.0.1:5000/data/file/${runId}?path=${encodeURIComponent(filePath)}`);
     
     if (!response.ok) {
       throw new Error(`Error fetching file content: ${response.status} ${response.statusText}`);
