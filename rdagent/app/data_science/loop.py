@@ -89,7 +89,7 @@ class DataScienceRDLoop(RDLoop):
         return exp
 
     def coding(self, prev_out: dict[str, Any]):
-        publish_trace("CODING", TaskStatus.STARTED, "Generating the pipeline code")
+        publish_trace("CODING", TaskStatus.STARTED, "Generating code")
         exp = prev_out["direct_exp_gen"]
         for tasks in exp.pending_tasks_list:
             exp.sub_tasks = tasks
@@ -115,14 +115,14 @@ class DataScienceRDLoop(RDLoop):
                     exp = self.workflow_coder.develop(exp)
                     publish_trace("WORKFLOW_TASK", TaskStatus.COMPLETED, "")
                 elif isinstance(exp.sub_tasks[0], PipelineTask):
-                    publish_trace("PIPELINE_TASK", TaskStatus.STARTED, "Executing the entire pipeline code")
+                    publish_trace("PIPELINE_TASK", TaskStatus.STARTED, "")
                     exp = self.pipeline_coder.develop(exp)
                     publish_trace("PIPELINE_TASK", TaskStatus.COMPLETED, "")
                 else:
                     raise NotImplementedError(f"Unsupported component in DataScienceRDLoop: {exp.hypothesis.component}")
             exp.sub_tasks = []
         logger.log_object(exp)
-        publish_trace("CODING", TaskStatus.COMPLETED, "Code implementation completed")
+        publish_trace("CODING", TaskStatus.COMPLETED, "Code implementation complete")
         return exp
 
     def running(self, prev_out: dict[str, Any]):
