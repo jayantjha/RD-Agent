@@ -12,7 +12,8 @@ MODEL_DEPLOYMENT_NAME="gpt-4"
 AGENT_ID="asst_pPTJItMqueYKSOFkAeg8goSf"
 AZURE_STORAGE_ACCOUNT_URL="https://rdagentpoc3274969426.blob.core.windows.net/"
 AZURE_STORAGE_CONTAINER_NAME="rd-agent"
-
+FAKE_THREAD_ID="thread_KosU4pD7ZxvUaXLBWeTE1qoC"
+FAKE_JOB=True
 
 APP_INSIGHTS_CONNECTION_STRING = (
     "InstrumentationKey=fe75ff06-e2e4-423c-9684-edbf52f1c6ea;"
@@ -34,19 +35,26 @@ COMMAND_EXECUTE = (
 )
 
 ENV_VARS = {
-    "USE_AZURE": "True",
-    "EMBEDDING_OPENAI_API_KEY": "",
-    "EMBEDDING_AZURE_API_BASE": "https://ai-pritamdagenthub298066461577.openai.azure.com",
-    "EMBEDDING_AZURE_API_VERSION": "2023-05-15",
-    "EMBEDDING_MODEL": "text-embedding-3-small",
-    "CHAT_OPENAI_API_KEY": "",
-    "CHAT_AZURE_API_BASE": "https://ai-pritamdagenthub298066461577.openai.azure.com",
-    "CHAT_AZURE_API_VERSION": "2025-01-01-preview",
-    "CHAT_MODEL": "o3-mini",
+    "EMBEDDING_MODEL": "azure/text-embedding-3-small",
+    "CHAT_MODEL": "azure/o3-mini",
     "DS_CODER_COSTEER_ENV_TYPE": "conda",
-    "DS_USE_MLE_BENCHMARK": False,
-    "DS_ENABLE_MODEL_DUMP": True,
-    "DS_CODER_ON_WHOLE_PIPELINE": True,
-    "DS_IF_USING_MLE_DATA": False,
-    "DS_ENABLE_DOC_DEV": True
+    "PROJECT_CONN_STRING": "eastus2.api.azureml.ms;696debc0-8b66-4d84-87b1-39f43917d76c;rg-pritamd-7928_ai;pritamd-agent",
+    "DS_SESSION_ROOT_PATH": "./git_ignore_folder/rdagent/sessions",
+    "DS_USE_MLE_BENCHMARK": "FALSE",
+    "DS_ENABLE_MODEL_DUMP": "True",
+    "DS_CODER_ON_WHOLE_PIPELINE": "True",
+    "DS_IF_USING_MLE_DATA": "FALSE",
+    "DS_ENABLE_DOC_DEV": "TRUE",
+    "DS_AZURE_STORAGE_ACCOUNT_URL": "https://rdagentpoc3274969426.blob.core.windows.net/",
+    "DS_AZURE_STORAGE_CONTAINER_NAME": "rd-agent",
+    "THREAD_ID": "thread_KosU4pD7ZxvUaXLBWeTE1qoC",
+    "AZURE_API_BASE": "https://ai-pritamdagenthub298066461577.openai.azure.com",
+    "AZURE_API_KEY": "",
+    "BACKEND": "rdagent.oai.backend.LiteLLMAPIBackend",
+    "CHAT_TEMPERATURE": "1",
+    "USE_CHAT_CACHE": "True",
+    "USE_EMBEDDING_CACHE": "True",
+    "COSTEER_V2_QUERY_FORMER_TRACE_LIMIT": "3",
+    "MAX_RETRY": "12000",
+    "RETRY_WAIT_SECONDS": "5"
 }
