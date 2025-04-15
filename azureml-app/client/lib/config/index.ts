@@ -12,16 +12,19 @@ const configurations = {
     apiBaseUrl: 'http://localhost:8000',
     dataEndpoint: '/data/file',
     updatesEndpoint: '/updates/saved',
+    chatEndPoint: '/chat',
   },
   production: {
     apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.azureml-app.com',
     dataEndpoint: '/data/file',
     updatesEndpoint: '/updates/saved',
+    chatEndPoint: '/chat',
   },
   test: {
     apiBaseUrl: 'http://localhost:8001',
     dataEndpoint: '/data/file',
     updatesEndpoint: '/updates/saved',
+    chatEndPoint: '/chat',
   }
 };
 

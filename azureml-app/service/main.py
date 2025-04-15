@@ -9,6 +9,10 @@ from controllers.job_controller import router as job_router
 from controllers.agent_controller import router as agent_router
 from controllers.updates_controller import router as updates_router 
 from controllers.data_controller import router as data_router
+from controllers.chat_controller import router as chat_router
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -34,5 +38,6 @@ app.include_router(job_router, prefix="/jobs", tags=["Jobs"])
 app.include_router(agent_router, prefix="/execute", tags=["Agents"])
 app.include_router(updates_router, tags=["Updates"])
 app.include_router(data_router, prefix="/data", tags=["Data"])
+app.include_router(chat_router, prefix="/chat", tags=["Data"])
 app.openapi = custom_openapi
 

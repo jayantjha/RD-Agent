@@ -9,6 +9,7 @@ import { AgentHeader } from "@/components/ml-agent/AgentHeader"
 import { AgentArtifacts } from "@/components/ml-agent/AgentArtifacts"
 import { ChatUI } from "@/components/ml-agent/ChatUI"
 import { MetricsChart } from "@/components/ml-agent/metrics-chart"
+import { chatStream } from "@/lib/chatStream"
 
 export default function MLAgentPage() {
   const [userMessage, setUserMessage] = useState("")
@@ -124,6 +125,7 @@ export default function MLAgentPage() {
   const [currentActivityIndex, setCurrentActivityIndex] = useState<number>(-1)
   const [availableLoopCounts, setAvailableLoopCounts] = useState<number[]>([]);
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+  const [chatThreadId, setChatThreadId] = useState<string | undefined>(undefined);  
 
   // Auto-scroll to the bottom of messages when new messages are added
   useEffect(() => {
@@ -153,7 +155,7 @@ export default function MLAgentPage() {
     }
   }
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!userMessage.trim() && !readyToStart) return
 
     // If we're ready to start and the user clicks the button, add a confirmation message
@@ -190,6 +192,22 @@ export default function MLAgentPage() {
     if (messages.length === 1) {
       setTaskDescription(userMessage)
     }
+    const {thread_id} = await chatStream(userMessage, (data) => { 
+      if (data) {
+        const newMessage = {
+          role: "agent" as const,
+          content: data,
+          timestamp: new Date(),
+        }
+        // data contans message ready to start
+        if (data.includes("ready to start")) {
+          setReadyToStart(true)
+        }
+        setMessages((prev) => [...prev, newMessage])
+      }
+    }, chatThreadId, (error) => {})
+    setChatThreadId(thread_id)
+    
   }
 
   // Function to simulate a conversation between agent and user
@@ -310,15 +328,15 @@ export default function MLAgentPage() {
   }
 
   // Start simulation when component mounts
-  useEffect(() => {
-    // Start with a slight delay to allow the UI to render
-    const timer = setTimeout(() => {
-      simulateConversation()
-    }, 100)
-    // 1000
+  // useEffect(() => {
+  //   // Start with a slight delay to allow the UI to render
+  //   const timer = setTimeout(() => {
+  //     simulateConversation()
+  //   }, 100)
+  //   // 1000
 
-    return () => clearTimeout(timer)
-  }, [])
+  //   return () => clearTimeout(timer)
+  // }, [])
 
   // Update the startAgent function to initialize agent
   const startAgent = () => {
