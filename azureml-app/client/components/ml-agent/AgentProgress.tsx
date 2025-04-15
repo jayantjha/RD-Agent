@@ -61,19 +61,19 @@ export function AgentProgress({
     "DS_LOOP": "Starting ML agent for task",
     "DS_SCENARIO": "Loading and analyzing requirements and datasets",
     "RDLOOP": "Hypothesis generation and coding loop",
-    "CODING": "Generating the pipeline code",
-    "EXPERIMENT_GENERATION": "Generating experiment for the loop",
+    "CODING": "Generating the code for experiment",
+    "EXPERIMENT_GENERATION": "Generating new hypothesis",
     "HYPOTHESIS_GENERATION": "Generating new hypothesis",
     "DATA_LOADING": "Code for loading data",
     "FEATURE_TASK": "Code for feature engineering",
     "MODEL_TASK": "Code for hypothesized model",
     "ENSEMBLE_TASK": "Generating ensemble model",
     "WORKFLOW_TASK": "Developing workflow",
-    "FEEDBACK": "Gathering feedback for the loop",
+    "FEEDBACK": "Evaluating model",
     "RECORD": "Recording results",
     "DS_UPLOADED": "Generated main.py pipeline code",
     "PIPELINE_TASK": "Running pipeline",
-    "RUNNING": "Executing and evaluating model"
+    "RUNNING": "Training and creating the model"
   }
 
   React.useEffect(() => {
@@ -83,7 +83,7 @@ export function AgentProgress({
   const processAgentActivity = (data: any) => {
     
     // Ignore list for specific task types
-    const ignoreList = ["FILE_MODIFIED", "MANIFEST_CREATED", "PIPELINE_TASK"];
+    const ignoreList = ["FILE_MODIFIED", "MANIFEST_CREATED", "PIPELINE_TASK", "DS_UPLOADED", "RECORD", "RDLOOP"];
     const childTasks = ["DS_UPLOADED"];
     
     // Skip processing if the task is in the ignore list
@@ -234,7 +234,8 @@ export function AgentProgress({
     }
 
     if (status === "in_progress") {
-      return <RefreshCcw className="h-4 w-4 text-green-500" />
+      return <Loader2 className="h-4 w-4 text-green-500 animate-spin" />
+      //return <RefreshCcw className="h-4 w-4 text-green-500" />
     }
 
     // Default icons based on type
