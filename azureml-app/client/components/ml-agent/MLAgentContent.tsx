@@ -161,8 +161,8 @@ export function MLAgentContent() {
   useEffect(() => {
     // Check if we're on a saved thread route
     console.log(pathname);
-    if (pathname && pathname.startsWith("/savedThread/")) {
-      const urlThreadId = pathname.split("/savedThread/")[1]
+    if (pathname && pathname.startsWith("/activity/")) {
+      const urlThreadId = pathname.split("/activity/")[1]
       console.log(urlThreadId);
       if (urlThreadId) {
         // Set the thread ID from URL

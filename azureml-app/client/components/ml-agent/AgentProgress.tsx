@@ -77,7 +77,7 @@ export function AgentProgress({
   }
 
   React.useEffect(() => {
-    router.push(`/savedThread/${threadId}`)
+    router.push(`/activity/${threadId}`)
   }, [])
 
   const processAgentActivity = (data: any) => {

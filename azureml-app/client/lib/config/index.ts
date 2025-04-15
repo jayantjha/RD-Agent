@@ -4,7 +4,7 @@
  */
 
 // Determine the current environment
-const environment = process.env.NEXT_PUBLIC_ENV || 'development';
+const environment = process.env.NEXT_PUBLIC_ENV || 'production';
 
 // Configuration for different environments
 const configurations = {
