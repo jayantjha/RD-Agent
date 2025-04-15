@@ -24,7 +24,7 @@ class DataScienceScen(Scenario):
     """Data Science Scenario"""
 
     def __init__(self, competition: str) -> None:
-        publish_trace("DS_SCENARIO", TaskStatus.STARTED, "Initializing Data Science Scenario")
+        publish_trace("DS_SCENARIO", TaskStatus.INPROGRESS, "Initializing Data Science Scenario")
         self.metric_name: str | None = (
             None  # It is None when initialization. After analysing, we'll assign the metric name
         )
