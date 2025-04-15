@@ -1,5 +1,4 @@
 import asyncio
-import uuid
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse, StreamingResponse
 from azure.identity.aio import DefaultAzureCredential

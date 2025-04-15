@@ -11,19 +11,22 @@ const configurations = {
   development: {
     apiBaseUrl: 'http://localhost:8000',
     dataEndpoint: '/data/file',
-    updatesEndpoint: '/updates/saved',
+    updatesEndpoint: '/updates',
+    updatesSavedEndpoint: '/updates/saved',
     chatEndPoint: '/chat',
   },
   production: {
-    apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.azureml-app.com',
+    apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://rdagent-poc-svc-bxdtaecgdwascwa5.eastus2-01.azurewebsites.net',
     dataEndpoint: '/data/file',
-    updatesEndpoint: '/updates/saved',
+    updatesEndpoint: '/updates',
+    updatesSavedEndpoint: '/updates/saved',
     chatEndPoint: '/chat',
   },
   test: {
     apiBaseUrl: 'http://localhost:8001',
     dataEndpoint: '/data/file',
-    updatesEndpoint: '/updates/saved',
+    updatesEndpoint: '/updates',
+    updatesSavedEndpoint: '/updates/saved',
     chatEndPoint: '/chat',
   }
 };

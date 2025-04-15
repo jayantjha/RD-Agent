@@ -1,13 +1,14 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { Bot, FileCode, BarChart3, Database, Play, RefreshCcw, ArrowRight, CheckCircle2, XCircle, Loader2, Clock } from "lucide-react"
+import { Bot, FileCode, BarChart3, Database, Play, RefreshCcw, ArrowRight, CheckCircle2, XCircle, Loader2, Clock, Sparkle, Sparkles } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
 import { startEventStream, stopEventStream } from "@/lib/streamManager"
 import { getApiUrl } from "@/lib/config/index"
+import { useRouter } from 'next/navigation';
 
 interface AgentProgressProps {
   threadId: string,
@@ -54,30 +55,36 @@ export function AgentProgress({
 }: AgentProgressProps) {
   // Maintain a local state for tracking unique loop_count values
   const [loopCounts, setLoopCounts] = useState<Set<number>>(new Set());
-
+  const router = useRouter();
   // Event mappings
   const event_mappings: Record<string, string> = {
     "DS_LOOP": "Starting ML agent for task",
     "DS_SCENARIO": "Loading and analyzing requirements and datasets",
     "RDLOOP": "Hypothesis generation and coding loop",
-    "CODING": "Coder agent",
-    "EXPERIMENT_GENERATION": "Generating experiment for the loop",
+    "CODING": "Generating the code for experiment",
+    "EXPERIMENT_GENERATION": "Generating new hypothesis",
+    "HYPOTHESIS_GENERATION": "Generating new hypothesis",
     "DATA_LOADING": "Code for loading data",
     "FEATURE_TASK": "Code for feature engineering",
     "MODEL_TASK": "Code for hypothesized model",
     "ENSEMBLE_TASK": "Generating ensemble model",
     "WORKFLOW_TASK": "Developing workflow",
-    "FEEDBACK": "Gathering feedback for the loop",
+    "FEEDBACK": "Evaluating model",
     "RECORD": "Recording results",
     "DS_UPLOADED": "Generated main.py pipeline code",
     "PIPELINE_TASK": "Running pipeline",
-    "RUNNING": "Executing and evaluating model"
+    "RUNNING": "Training and creating the model"
   }
+
+  React.useEffect(() => {
+    router.push(`/savedThread/${threadId}`)
+  }, [])
 
   const processAgentActivity = (data: any) => {
     
     // Ignore list for specific task types
-    const ignoreList = ["FILE_MODIFIED", "MANIFEST_CREATED", "RECORD"];
+    const ignoreList = ["FILE_MODIFIED", "MANIFEST_CREATED", "PIPELINE_TASK", "DS_UPLOADED", "RECORD", "RDLOOP"];
+    const childTasks = ["DS_UPLOADED"];
     
     // Skip processing if the task is in the ignore list
     if (ignoreList.includes(data.task)) {
@@ -98,15 +105,17 @@ export function AgentProgress({
       timestamp: new Date(data.createdAt * 1000),
       message: `${event_mappings[data.task] || data.task}`,
       shortDescription: data.message || "",
-      details: data.description || "No details provided",
-      type: data.type || "info",
+      details: data.description || "",
+      type: data.task,
       artifactId: data.artifactId,
       artifactName: data.artifactName,
       version: data.loop_count !== undefined ? `v${data.loop_count}` : undefined,
       sessionId: data.session_id || undefined,
       status: data.status.toLowerCase() || "done",
       loop_count: data.loop_count,
-      indent: 0,
+      indent: childTasks.includes(data.task) ? 1 : 0,
+      highlight: data.task == "EXPERIMENT_GENERATION",
+      previousEvents: Array<any>(),
     }
 
     // Update activities state
@@ -118,7 +127,9 @@ export function AgentProgress({
       let remaining = prev.slice(0, -1)
     
       if (lastActivity.message == activity.message) {
-        activity.indent = lastActivity.indent
+        // activity.indent = lastActivity.indent
+        activity.previousEvents = [...lastActivity.previousEvents, lastActivity]
+
         return [...remaining, activity]
       }
 
@@ -209,6 +220,10 @@ export function AgentProgress({
     //   return <Loader2 className="h-4 w-4 animate-spin text-azure-blue" />
     // }
 
+    if (type == "EXPERIMENT_GENERATION" && status == "completed") {
+      return <Sparkles className="h-4 w-4 text-green-500" />
+    }
+
     // Otherwise, show status icon
     if (status === "failed") {
       return <XCircle className="h-4 w-4 text-red-500" />
@@ -223,7 +238,8 @@ export function AgentProgress({
     }
 
     if (status === "in_progress") {
-      return <RefreshCcw className="h-4 w-4 text-green-500" />
+      return <Loader2 className="h-4 w-4 text-green-500 animate-spin" />
+      //return <RefreshCcw className="h-4 w-4 text-green-500" />
     }
 
     // Default icons based on type
@@ -323,6 +339,14 @@ export function AgentProgress({
                           onOpenChange={() => toggleActivityExpand(activity.id)}
                         >
                           <CollapsibleContent className="mt-2 pt-2 border-t border-azure-border">
+                            { activity.previousEvents.map((prevEvent: any) => (
+                                <div key={prevEvent.id} className="flex items-center gap-2 mb-1">
+                                  <p className="text-sm text-gray-600 mt-1">{prevEvent.shortDescription}</p>
+                                  <p className="text-sm text-gray-600 mt-1">{prevEvent.details}</p>
+                                </div>
+                              ))
+                            }
+
                             <p className="text-sm text-gray-700">{activity.details}</p>
                           </CollapsibleContent>
                         </Collapsible>

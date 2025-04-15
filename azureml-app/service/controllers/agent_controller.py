@@ -22,7 +22,6 @@ async def execute_agent(request: AgentRequest):
 
         logger.info("Agent execution logic would go here")
 
-        thread_id = FAKE_THREAD_ID
         agentid = AGENT_ID
 
         async with DefaultAzureCredential() as creds:
@@ -38,39 +37,39 @@ async def execute_agent(request: AgentRequest):
                 # logger.info(f"Created agent, agent ID: {agent.id}")
 
                 competition_id = DEFAULT_COMPETITION_ID
-                if not FAKE_JOB:
-                    if request.chat_thread_id and isinstance(request.chat_thread_id, str):
-                        # Create a new thread for this agent execution
-                        chat_thread = await project_client.agents.get_thread(thread_id=request.chat_thread_id)
-                        tool_ouput = chat_thread.metadata[KAGGLE_TOOL_NAME]
-                        if tool_ouput:
-                            competition_id = json.loads(tool_ouput).get("competition_id")
-                            logger.info(f"Found competiton : {competition_id}")
-                        
-                    thread = await project_client.agents.create_thread()
-                    
-                    logger.info(f"Created thread, thread ID: {thread.id}")
 
-                    # Instantiate the JobParameters class
-                    job_params = JobParameters(
-                        agent_id=agentid,
-                        thread_id=thread.id,
-                        user_prompt=request.user_prompt,
-                        data_uri=request.data_uri,
-                        project_conn_string=PROJECT_CONNECTION_STRING,
-                        competition_id=competition_id
-                    )
-                    submit_aml_job(job_params)
-                    thread_id = thread.id
+                if request.chat_thread_id and isinstance(request.chat_thread_id, str):
+                    # Create a new thread for this agent execution
+                    chat_thread = await project_client.agents.get_thread(thread_id=request.chat_thread_id)
+                    tool_ouput = chat_thread.metadata[KAGGLE_TOOL_NAME]
+                    if tool_ouput:
+                        competition_id = json.loads(tool_ouput).get("competition_id")
+                        logger.info(f"Found competiton : {competition_id}")
+                    
+                thread = await project_client.agents.create_thread()
+                
+                logger.info(f"Created thread, thread ID: {thread.id}")
+
+                # Instantiate the JobParameters class
+                job_params = JobParameters(
+                    agent_id=agentid,
+                    thread_id=thread.id,
+                    user_prompt=request.user_prompt,
+                    data_uri=request.data_uri,
+                    project_conn_string=PROJECT_CONNECTION_STRING,
+                    competition_id=competition_id
+                )
+                submit_aml_job(job_params)
+                thread_id = thread.id
 
                 # TO BE HANDLED LATER
 
-                # message = await project_client.agents.create_message(
-                #     thread_id=thread.id,
-                #     role="user",
-                #     content="user_prompt",
-                # )
-                # logger.info(f"Created message, message ID: {message.id}")
+                message = await project_client.agents.create_message(
+                    thread_id=thread.id,
+                    role="assistant",
+                    content="Initiating agent...",
+                )
+                logger.info(f"Created message, message ID: {message.id}")
 
                 # run = await project_client.agents.create_and_process_run(thread_id=thread.id, agent_id=agent.id)
                 # logger.info(f"Run finished with status: {run.status}")

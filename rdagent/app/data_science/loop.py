@@ -78,63 +78,76 @@ class DataScienceRDLoop(RDLoop):
         super(RDLoop, self).__init__() 
 
     def direct_exp_gen(self, prev_out: dict[str, Any]):
-        publish_trace("EXPERIMENT_GENERATION", TaskStatus.STARTED, "Experiment generation started")
-        selection = self.ckp_selector.get_selection(self.trace)
-        exp = self.exp_gen.gen(self.trace, selection)
-        logger.log_object(exp)
+        publish_trace("EXPERIMENT_GENERATION", TaskStatus.INPROGRESS, "Analyzing requirements and feedbacks for generating new hypothesis")
+        try:
+            selection = self.ckp_selector.get_selection(self.trace)
+            exp = self.exp_gen.gen(self.trace, selection)
+            logger.log_object(exp)
 
-        # FIXME: this is for LLM debug webapp, remove this when the debugging is done.
-        logger.log_object(exp, tag="debug_exp_gen")
-        publish_trace("EXPERIMENT_GENERATION", TaskStatus.COMPLETED, "Experiment generation completed")
+            # FIXME: this is for LLM debug webapp, remove this when the debugging is done.
+            logger.log_object(exp, tag="debug_exp_gen")
+        except Exception as e:
+            publish_trace("EXPERIMENT_GENERATION", TaskStatus.FAILED, f"Error during execution: {str(e)}")
+            raise
+        publish_trace("EXPERIMENT_GENERATION", TaskStatus.COMPLETED, "Hypothesis generated", exp.hypothesis.hypothesis)
         return exp
 
     def coding(self, prev_out: dict[str, Any]):
-        publish_trace("CODING", TaskStatus.STARTED, "Generating code")
-        exp = prev_out["direct_exp_gen"]
-        for tasks in exp.pending_tasks_list:
-            exp.sub_tasks = tasks
-            with logger.tag(f"{exp.sub_tasks[0].__class__.__name__}"):
-                if isinstance(exp.sub_tasks[0], DataLoaderTask):
-                    publish_trace("LOAD_DATA_TASK", TaskStatus.STARTED, "Code generation for loading data started")
-                    exp = self.data_loader_coder.develop(exp)
-                    publish_trace("LOAD_DATA_TASK", TaskStatus.COMPLETED, "Code generation for loading data ended")
-                elif isinstance(exp.sub_tasks[0], FeatureTask):
-                    publish_trace("FEATURE_TASK", TaskStatus.STARTED, "")
-                    exp = self.feature_coder.develop(exp)
-                    publish_trace("FEATURE_TASK", TaskStatus.COMPLETED, "")
-                elif isinstance(exp.sub_tasks[0], ModelTask):
-                    publish_trace("MODEL_TASK", TaskStatus.STARTED, "")
-                    exp = self.model_coder.develop(exp)
-                    publish_trace("MODEL_TASK", TaskStatus.COMPLETED, "")
-                elif isinstance(exp.sub_tasks[0], EnsembleTask):
-                    publish_trace("ENSEMBLE_TASK", TaskStatus.STARTED, "")
-                    exp = self.ensemble_coder.develop(exp)
-                    publish_trace("ENSEMBLE_TASK", TaskStatus.COMPLETED, "")
-                elif isinstance(exp.sub_tasks[0], WorkflowTask):
-                    publish_trace("WORKFLOW_TASK", TaskStatus.STARTED, "")
-                    exp = self.workflow_coder.develop(exp)
-                    publish_trace("WORKFLOW_TASK", TaskStatus.COMPLETED, "")
-                elif isinstance(exp.sub_tasks[0], PipelineTask):
-                    publish_trace("PIPELINE_TASK", TaskStatus.STARTED, "")
-                    exp = self.pipeline_coder.develop(exp)
-                    publish_trace("PIPELINE_TASK", TaskStatus.COMPLETED, "")
-                else:
-                    raise NotImplementedError(f"Unsupported component in DataScienceRDLoop: {exp.hypothesis.component}")
-            exp.sub_tasks = []
-        logger.log_object(exp)
+        publish_trace("CODING", TaskStatus.INPROGRESS, "Generating code")
+        try:
+            exp = prev_out["direct_exp_gen"]
+            for tasks in exp.pending_tasks_list:
+                exp.sub_tasks = tasks
+                with logger.tag(f"{exp.sub_tasks[0].__class__.__name__}"):
+                    if isinstance(exp.sub_tasks[0], DataLoaderTask):
+                        publish_trace("LOAD_DATA_TASK", TaskStatus.STARTED, "Code generation for loading data started")
+                        exp = self.data_loader_coder.develop(exp)
+                        publish_trace("LOAD_DATA_TASK", TaskStatus.COMPLETED, "Code generation for loading data ended")
+                    elif isinstance(exp.sub_tasks[0], FeatureTask):
+                        publish_trace("FEATURE_TASK", TaskStatus.STARTED, "")
+                        exp = self.feature_coder.develop(exp)
+                        publish_trace("FEATURE_TASK", TaskStatus.COMPLETED, "")
+                    elif isinstance(exp.sub_tasks[0], ModelTask):
+                        publish_trace("MODEL_TASK", TaskStatus.STARTED, "")
+                        exp = self.model_coder.develop(exp)
+                        publish_trace("MODEL_TASK", TaskStatus.COMPLETED, "")
+                    elif isinstance(exp.sub_tasks[0], EnsembleTask):
+                        publish_trace("ENSEMBLE_TASK", TaskStatus.STARTED, "")
+                        exp = self.ensemble_coder.develop(exp)
+                        publish_trace("ENSEMBLE_TASK", TaskStatus.COMPLETED, "")
+                    elif isinstance(exp.sub_tasks[0], WorkflowTask):
+                        publish_trace("WORKFLOW_TASK", TaskStatus.STARTED, "")
+                        exp = self.workflow_coder.develop(exp)
+                        publish_trace("WORKFLOW_TASK", TaskStatus.COMPLETED, "")
+                    elif isinstance(exp.sub_tasks[0], PipelineTask):
+                        publish_trace("PIPELINE_TASK", TaskStatus.STARTED, "")
+                        exp = self.pipeline_coder.develop(exp)
+                        publish_trace("PIPELINE_TASK", TaskStatus.COMPLETED, "")
+                    else:
+                        raise NotImplementedError(f"Unsupported component in DataScienceRDLoop: {exp.hypothesis.component}")
+                exp.sub_tasks = []
+            logger.log_object(exp)
+        except Exception as e:
+            publish_trace("CODING", TaskStatus.FAILED, f"Error during execution: {str(e)}")
+            raise
         publish_trace("CODING", TaskStatus.COMPLETED, "Code implementation complete")
         return exp
 
     def running(self, prev_out: dict[str, Any]):
         exp: DSExperiment = prev_out["coding"]
-        if exp.is_ready_to_run():
-            publish_trace("RUNNING", TaskStatus.STARTED, "")
-            new_exp = self.runner.develop(exp)
-            logger.log_object(new_exp)
-            exp = new_exp
-        if DS_RD_SETTING.enable_doc_dev:
-            self.docdev.develop(exp)
-        publish_trace("RUNNING", TaskStatus.COMPLETED, "Code execution and evaluation complete")
+        publish_trace("RUNNING", TaskStatus.INPROGRESS, "")
+        
+        try:
+            if exp.is_ready_to_run():
+                new_exp = self.runner.develop(exp)
+                logger.log_object(new_exp)
+                exp = new_exp
+            if DS_RD_SETTING.enable_doc_dev:
+                self.docdev.develop(exp)
+        except Exception as e:
+            publish_trace("RUNNING", TaskStatus.FAILED, f"Error during execution: {str(e)}")
+            raise
+        publish_trace("RUNNING", TaskStatus.COMPLETED, "Model execution and evaluation complete")
         return exp
 
     def feedback(self, prev_out: dict[str, Any]) -> ExperimentFeedback:
@@ -142,53 +155,60 @@ class DataScienceRDLoop(RDLoop):
         Assumption:
         - If we come to feedback phase, the previous development steps are successful.
         """
-        publish_trace("FEEDBACK", TaskStatus.STARTED, "Generating feedback on experiment")
-        exp: DSExperiment = prev_out["running"]
-        if self.trace.next_incomplete_component() is None or DS_RD_SETTING.coder_on_whole_pipeline:
-            # we have alreadly completed components in previous trace. So current loop is focusing on a new proposed idea.
-            # So we need feedback for the proposal.
-            feedback = self.summarizer.generate_feedback(exp, self.trace)
-        else:
-            # Otherwise, it is on drafting stage, don't need complicated feedbacks.
-            feedback = ExperimentFeedback(
-                reason=f"{exp.hypothesis.component} is completed.",
-                decision=True,
-            )
-        logger.log_object(feedback)
-        publish_trace("FEEDBACK", TaskStatus.COMPLETED, "Generating feedback on experiment")
+        publish_trace("FEEDBACK", TaskStatus.INPROGRESS, "Generating feedback on experiment")
+        try:
+            exp: DSExperiment = prev_out["running"]
+            if self.trace.next_incomplete_component() is None or DS_RD_SETTING.coder_on_whole_pipeline:
+                # we have alreadly completed components in previous trace. So current loop is focusing on a new proposed idea.
+                # So we need feedback for the proposal.
+                feedback = self.summarizer.generate_feedback(exp, self.trace)
+            else:
+                # Otherwise, it is on drafting stage, don't need complicated feedbacks.
+                feedback = ExperimentFeedback(
+                    reason=f"{exp.hypothesis.component} is completed.",
+                    decision=True,
+                )
+            logger.log_object(feedback)
+        except Exception as e:
+            publish_trace("FEEDBACK", TaskStatus.FAILED, f"Error during execution: {str(e)}")
+            raise
+        publish_trace("FEEDBACK", TaskStatus.COMPLETED if feedback.decision else TaskStatus.FAILED, "Generated feedback on experiment", f"Decision: {feedback.decision}\nReason: {feedback.reason}")
         return feedback
 
     def record(self, prev_out: dict[str, Any]):
-        publish_trace("RECORD", TaskStatus.STARTED, "Recording experiment results")
+        publish_trace("RECORD", TaskStatus.INPROGRESS, "Recording experimentation results")
+        try:
+            # set the DAG parent for the trace
+            self.trace.sync_dag_parent_and_hist()
 
-        # set the DAG parent for the trace
-        self.trace.sync_dag_parent_and_hist()
-
-        e = prev_out.get(self.EXCEPTION_KEY, None)
-        if e is None:
-            self.trace.hist.append((prev_out["running"], prev_out["feedback"]))
-        else:
-            self.trace.hist.append(
-                (
-                    prev_out["direct_exp_gen"] if isinstance(e, CoderError) else prev_out["coding"],
-                    ExperimentFeedback.from_exception(e),
+            e = prev_out.get(self.EXCEPTION_KEY, None)
+            if e is None:
+                self.trace.hist.append((prev_out["running"], prev_out["feedback"]))
+            else:
+                self.trace.hist.append(
+                    (
+                        prev_out["direct_exp_gen"] if isinstance(e, CoderError) else prev_out["coding"],
+                        ExperimentFeedback.from_exception(e),
+                    )
                 )
-            )
-            if (
-                self.trace.sota_experiment() is None
-                and len(self.trace.hist) >= DS_RD_SETTING.consecutive_errors
-                and not DS_RD_SETTING.coder_on_whole_pipeline
-            ):
-                # if {in inital/drafting stage} and {tried enough times}
-                for _, fb in self.trace.hist[-DS_RD_SETTING.consecutive_errors :]:
-                    if fb:
-                        break  # any success will stop restarting.
-                else:  # otherwise restart it
-                    logger.error("Consecutive errors reached the limit. Dumping trace.")
-                    logger.log_object(self.trace, tag="trace before restart")
-                    self.trace = DSTrace(scen=self.trace.scen, knowledge_base=self.trace.knowledge_base)
-        logger.log_object(self.trace, tag="trace")
-        logger.log_object(self.trace.sota_experiment(), tag="SOTA experiment")
+                if (
+                    self.trace.sota_experiment() is None
+                    and len(self.trace.hist) >= DS_RD_SETTING.consecutive_errors
+                    and not DS_RD_SETTING.coder_on_whole_pipeline
+                ):
+                    # if {in inital/drafting stage} and {tried enough times}
+                    for _, fb in self.trace.hist[-DS_RD_SETTING.consecutive_errors :]:
+                        if fb:
+                            break  # any success will stop restarting.
+                    else:  # otherwise restart it
+                        logger.error("Consecutive errors reached the limit. Dumping trace.")
+                        logger.log_object(self.trace, tag="trace before restart")
+                        self.trace = DSTrace(scen=self.trace.scen, knowledge_base=self.trace.knowledge_base)
+            logger.log_object(self.trace, tag="trace")
+            logger.log_object(self.trace.sota_experiment(), tag="SOTA experiment")
+        except Exception as e:
+            publish_trace("RECORD", TaskStatus.FAILED, f"Error during execution: {str(e)}")
+            raise
         publish_trace("RECORD", TaskStatus.COMPLETED, "Experiment results recorded")
 
 

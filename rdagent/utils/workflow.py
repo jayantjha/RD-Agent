@@ -104,7 +104,7 @@ class LoopBase:
             How many steps to run; if current loop is incomplete, it will be counted as the first loop for completion
             `None` indicates to run forever until error or KeyboardInterrupt
         """
-        publish_trace("RDLOOP", TaskStatus.STARTED, f"Started...")
+        #publish_trace("RDLOOP", TaskStatus.STARTED, f"Started...")
         with tqdm(total=len(self.steps), desc="Workflow Progress", unit="step") as pbar: 
             while True:
                 if step_n is not None:

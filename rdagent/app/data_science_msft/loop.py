@@ -265,7 +265,7 @@ class FolderWatcher(FileSystemEventHandler):
                     f"Uploaded {file_path} to blob storage as {blob_name} with content type {content_type}"
                 )
                 if file_path.name == "main.py":
-                    publish_trace("DS_UPLOADED", TaskStatus.COMPLETED, f"Uploaded {file_path} to blob storage as {blob_name}")
+                    publish_trace("DS_UPLOADED", TaskStatus.COMPLETED, f"Uploaded main.py to blob storage")
         except Exception as e:
             return
 
@@ -333,16 +333,18 @@ def main(
         dotenv run -- python rdagent/app/data_science/loop.py [--competition titanic] $LOG_PATH/__session__/1/0_propose  --step_n 1   # `step_n` is a optional parameter
         rdagent kaggle --competition playground-series-s4e8  # You are encouraged to use this one.
     """
-    publish_trace("DS_LOOP", TaskStatus.STARTED, "Initializing environment and loading depedencies")
+    publish_trace("DS_LOOP", TaskStatus.INPROGRESS, "Initializing environment and loading depedencies")
 
     if competition is not None:
         DS_RD_SETTING.competition = competition
 
     if DS_RD_SETTING.session_root_path:
+        publish_trace("DS_LOOP", TaskStatus.INPROGRESS, "Initializing session")
         initialize_session()
 
     if DS_RD_SETTING.competition:
         if DS_RD_SETTING.scen.endswith("KaggleScen"):
+            publish_trace("DS_LOOP", TaskStatus.INPROGRESS, "Downloading data")
             download_data(competition=DS_RD_SETTING.competition,
                           settings=DS_RD_SETTING)
         else:
@@ -353,6 +355,9 @@ def main(
                 return
     else:
         logger.error("Please specify competition name.")
+
+    publish_trace("DS_LOOP", TaskStatus.COMPLETED, "Initializing environment and loading depedencies completed")
+
     if path is None:
         kaggle_loop = DataScienceV2RDLoop(DS_RD_SETTING)
     else:
@@ -360,7 +365,7 @@ def main(
     kaggle_loop.run(step_n=step_n, loop_n=loop_n)
 
 
-def initialize_session():
+def initialize_session(): 
     DS_RD_SETTING.session_id = str(uuid.uuid4())
     foundry.set_session_id(DS_RD_SETTING.session_id)
     DS_RD_SETTING.session_path = (

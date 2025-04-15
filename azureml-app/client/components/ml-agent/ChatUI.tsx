@@ -154,7 +154,7 @@ export function ChatUI({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={handleSendMessage}
+                onClick = {() => handleSendMessage()}
                 disabled={!userMessage.trim()}
                 className="text-gray-500 hover:text-azure-blue hover:bg-transparent"
               >
