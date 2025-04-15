@@ -60,8 +60,9 @@ export function AgentProgress({
     "DS_LOOP": "Starting ML agent for task",
     "DS_SCENARIO": "Loading and analyzing requirements and datasets",
     "RDLOOP": "Hypothesis generation and coding loop",
-    "CODING": "Coder agent",
+    "CODING": "Generating the pipeline code",
     "EXPERIMENT_GENERATION": "Generating experiment for the loop",
+    "HYPOTHESIS_GENERATION": "Generating new hypothesis",
     "DATA_LOADING": "Code for loading data",
     "FEATURE_TASK": "Code for feature engineering",
     "MODEL_TASK": "Code for hypothesized model",
@@ -77,7 +78,8 @@ export function AgentProgress({
   const processAgentActivity = (data: any) => {
     
     // Ignore list for specific task types
-    const ignoreList = ["FILE_MODIFIED", "MANIFEST_CREATED", "RECORD"];
+    const ignoreList = ["FILE_MODIFIED", "MANIFEST_CREATED", "PIPELINE_TASK"];
+    const childTasks = ["DS_UPLOADED"];
     
     // Skip processing if the task is in the ignore list
     if (ignoreList.includes(data.task)) {
@@ -98,7 +100,7 @@ export function AgentProgress({
       timestamp: new Date(data.createdAt * 1000),
       message: `${event_mappings[data.task] || data.task}`,
       shortDescription: data.message || "",
-      details: data.description || "No details provided",
+      details: data.description || "",
       type: data.type || "info",
       artifactId: data.artifactId,
       artifactName: data.artifactName,
@@ -106,7 +108,9 @@ export function AgentProgress({
       sessionId: data.session_id || undefined,
       status: data.status.toLowerCase() || "done",
       loop_count: data.loop_count,
-      indent: 0,
+      indent: childTasks.includes(data.task) ? 1 : 0,
+      highlight: data.task == "EXPERIMENT_GENERATION",
+      previousEvents: Array<any>(),
     }
 
     // Update activities state
@@ -118,7 +122,9 @@ export function AgentProgress({
       let remaining = prev.slice(0, -1)
     
       if (lastActivity.message == activity.message) {
-        activity.indent = lastActivity.indent
+        // activity.indent = lastActivity.indent
+        activity.previousEvents = [...lastActivity.previousEvents, lastActivity]
+
         return [...remaining, activity]
       }
 
@@ -271,7 +277,7 @@ export function AgentProgress({
             {agentActivities.map((activity, index) => (
               <div
                 key={activity.id}
-                style={{marginLeft: `${activity.indent * 20}px`}}
+                style={{marginLeft: `${activity.indent * 20}px`, backgroundColor: `${activity.highlight ? "#e0e0e0" : "inherit"}`}}
                 className={`group border border-azure-border rounded-md p-3 hover:bg-azure-gray/30 transition-colors cursor-pointer bg-white ${
                   isStreaming && index === currentActivityIndex ? "border-azure-blue" : ""
                 }`}
@@ -323,6 +329,14 @@ export function AgentProgress({
                           onOpenChange={() => toggleActivityExpand(activity.id)}
                         >
                           <CollapsibleContent className="mt-2 pt-2 border-t border-azure-border">
+                            { activity.previousEvents.map((prevEvent: any) => (
+                                <div key={prevEvent.id} className="flex items-center gap-2 mb-1">
+                                  <p className="text-sm text-gray-600 mt-1">{prevEvent.shortDescription}</p>
+                                  <p className="text-sm text-gray-600 mt-1">{prevEvent.details}</p>
+                                </div>
+                              ))
+                            }
+
                             <p className="text-sm text-gray-700">{activity.details}</p>
                           </CollapsibleContent>
                         </Collapsible>
