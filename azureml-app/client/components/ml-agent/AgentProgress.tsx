@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { Bot, FileCode, BarChart3, Database, Play, RefreshCcw, ArrowRight, CheckCircle2, XCircle, Loader2, Clock } from "lucide-react"
+import { Bot, FileCode, BarChart3, Database, Play, RefreshCcw, ArrowRight, CheckCircle2, XCircle, Loader2, Clock, Sparkle, Sparkles } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -106,7 +106,7 @@ export function AgentProgress({
       message: `${event_mappings[data.task] || data.task}`,
       shortDescription: data.message || "",
       details: data.description || "",
-      type: data.type || "info",
+      type: data.task,
       artifactId: data.artifactId,
       artifactName: data.artifactName,
       version: data.loop_count !== undefined ? `v${data.loop_count}` : undefined,
@@ -220,6 +220,10 @@ export function AgentProgress({
     //   return <Loader2 className="h-4 w-4 animate-spin text-azure-blue" />
     // }
 
+    if (type == "EXPERIMENT_GENERATION" && status == "completed") {
+      return <Sparkles className="h-4 w-4 text-green-500" />
+    }
+
     // Otherwise, show status icon
     if (status === "failed") {
       return <XCircle className="h-4 w-4 text-red-500" />
@@ -283,7 +287,7 @@ export function AgentProgress({
             {agentActivities.map((activity, index) => (
               <div
                 key={activity.id}
-                style={{marginLeft: `${activity.indent * 20}px`, backgroundColor: `${activity.highlight ? "#e0e0e0" : "inherit"}`}}
+                style={{marginLeft: `${activity.indent * 20}px`}}
                 className={`group border border-azure-border rounded-md p-3 hover:bg-azure-gray/30 transition-colors cursor-pointer bg-white ${
                   isStreaming && index === currentActivityIndex ? "border-azure-blue" : ""
                 }`}
