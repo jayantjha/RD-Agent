@@ -496,6 +496,7 @@ export function MLAgentContent() {
             files={files}
             readyToStart={readyToStart}
             startAgent={startAgent} // Add missing prop
+            chatThreadId={chatThreadId}
             messagesEndRef={messagesEndRef as React.RefObject<HTMLDivElement>}
             setReadyToStart={function (ready: boolean): void {
               throw new Error("Function not implemented.")

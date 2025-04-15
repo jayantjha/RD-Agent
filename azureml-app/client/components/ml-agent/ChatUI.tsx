@@ -23,6 +23,7 @@ interface ChatUIProps {
   startAgent: () => void
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   messagesEndRef: React.RefObject<HTMLDivElement>
+  chatThreadId: string | undefined;
 }
 
 export function ChatUI({
@@ -36,6 +37,7 @@ export function ChatUI({
   files,
   handleFileChange,
   messagesEndRef,
+  chatThreadId,
 }: ChatUIProps) {
 
   const { 
@@ -51,7 +53,8 @@ export function ChatUI({
     // Call mutate with the required parameters
     mutate({
       user_prompt: "this is a user_prompt",
-      data_uri: "https://google.com"
+      data_uri: "https://google.com",
+      chat_thread_id: chatThreadId,
     });
   };
 
@@ -151,7 +154,7 @@ export function ChatUI({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={handleSendMessage}
+                onClick = {() => handleSendMessage()}
                 disabled={!userMessage.trim()}
                 className="text-gray-500 hover:text-azure-blue hover:bg-transparent"
               >

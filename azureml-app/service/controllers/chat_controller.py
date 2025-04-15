@@ -48,7 +48,7 @@ async def start_chat(request: ChatRequest):
                     thread_id=thread.id, 
                     agent_id=CHAT_START_AGENT_ID
                 )
-                logger.info(f"Run finished with status: {run.status}")
+                logger.info(f"Run finished for run: {run.id} with status: {run.status}")
                 
 
                 if run.status == "failed":
@@ -113,6 +113,7 @@ async def stream_chat(thread_id: str, run_id: str):
                                         try:
                                             logger.info(f"Executing tool call: {tool_call}")
                                             output = tool_functions.execute(tool_call)
+                                            tool_call.function.name
                                             tool_outputs.append(
                                                 ToolOutput(
                                                     tool_call_id=tool_call.id,
@@ -127,7 +128,13 @@ async def stream_chat(thread_id: str, run_id: str):
                                     await project_client.agents.submit_tool_outputs_to_run(
                                         thread_id=thread_id, run_id=run.id, tool_outputs=tool_outputs
                                     )
-                            
+                                    await project_client.agents.update_thread(
+                                        thread_id=thread_id,
+                                        metadata={
+                                            tool_call.function.name: output,
+                                        }
+                                    )
+
                             # If not completed, wait and continue the loop
                             if not completed:
                                 await asyncio.sleep(1)
@@ -135,7 +142,7 @@ async def stream_chat(thread_id: str, run_id: str):
                                 
                             # If we're here, the run is completed and we can fetch messages
                             try:
-                                messages = await project_client.agents.list_messages(thread_id=thread_id)
+                                messages = await project_client.agents.list_messages(thread_id=thread_id, limit=5)
                                 message = messages.get_last_message_by_role(MessageRole.AGENT)
                                 yield f"data: {message.content[0].text.value}\n\n"
                             except Exception as e:
