@@ -163,3 +163,7 @@
 .artifact-tabs [role="tabpanel"] {
   transition: all 0.2s ease-in-out;
 }
+
+.h-fix {
+  height: 350px;
+}

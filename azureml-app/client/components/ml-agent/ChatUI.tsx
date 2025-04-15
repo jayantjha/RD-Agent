@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useRef } from "react"
-import { Paperclip, Send } from "lucide-react"
+import React, { useEffect, useRef } from "react"
+import { FileText, Paperclip, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useExecuteAgent } from "@/lib/queries/useExecuteAgent"
 
 interface ChatUIProps {
   messages: {
@@ -15,7 +16,7 @@ interface ChatUIProps {
   }[]
   userMessage: string
   setUserMessage: (message: string) => void
-  handleSendMessage: () => void
+  handleSendMessage: (threadId: string) => void
   readyToStart: boolean
   setReadyToStart: (ready: boolean) => void
   files: File[]
@@ -36,6 +37,31 @@ export function ChatUI({
   handleFileChange,
   messagesEndRef,
 }: ChatUIProps) {
+
+  const { 
+    mutate, 
+    isLoading, 
+    isError, 
+    error, 
+    data, 
+    isSuccess 
+  } = useExecuteAgent();
+
+  const handleExecuteClick = () => {
+    // Call mutate with the required parameters
+    mutate({
+      user_prompt: "this is a user_prompt",
+      data_uri: "https://google.com"
+    });
+  };
+
+  useEffect(() => {
+    if (isSuccess && data.thread_id) {
+      console.log("thread_id", data.thread_id);
+      handleSendMessage(data.thread_id);
+    }
+  }, [isSuccess, data, handleSendMessage])
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
       <div className="w-full max-w-3xl flex flex-col items-center">
@@ -89,7 +115,7 @@ export function ChatUI({
                 </Button>
                 <Button
                   className="bg-azure-blue text-white hover:bg-azure-dark-blue"
-                  onClick={() => handleSendMessage()}
+                  onClick={() => handleExecuteClick()}
                 >
                   Start Agent Run
                 </Button>
@@ -140,5 +166,4 @@ export function ChatUI({
   )
 }
 
-// Import for FileText icon
-import { FileText } from "lucide-react"
+
