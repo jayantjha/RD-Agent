@@ -78,7 +78,7 @@ class DataScienceRDLoop(RDLoop):
         super(RDLoop, self).__init__() 
 
     def direct_exp_gen(self, prev_out: dict[str, Any]):
-        publish_trace("EXPERIMENT_GENERATION", TaskStatus.STARTED, "Analyzing requirements and feedbacks for generating new hypothesis")
+        publish_trace("EXPERIMENT_GENERATION", TaskStatus.INPROGRESS, "Analyzing requirements and feedbacks for generating new hypothesis")
         try:
             selection = self.ckp_selector.get_selection(self.trace)
             exp = self.exp_gen.gen(self.trace, selection)
@@ -93,7 +93,7 @@ class DataScienceRDLoop(RDLoop):
         return exp
 
     def coding(self, prev_out: dict[str, Any]):
-        publish_trace("CODING", TaskStatus.STARTED, "Generating code")
+        publish_trace("CODING", TaskStatus.INPROGRESS, "Generating code")
         try:
             exp = prev_out["direct_exp_gen"]
             for tasks in exp.pending_tasks_list:
@@ -135,7 +135,7 @@ class DataScienceRDLoop(RDLoop):
 
     def running(self, prev_out: dict[str, Any]):
         exp: DSExperiment = prev_out["coding"]
-        publish_trace("RUNNING", TaskStatus.STARTED, "")
+        publish_trace("RUNNING", TaskStatus.INPROGRESS, "")
         
         try:
             if exp.is_ready_to_run():
@@ -155,7 +155,7 @@ class DataScienceRDLoop(RDLoop):
         Assumption:
         - If we come to feedback phase, the previous development steps are successful.
         """
-        publish_trace("FEEDBACK", TaskStatus.STARTED, "Generating feedback on experiment")
+        publish_trace("FEEDBACK", TaskStatus.INPROGRESS, "Generating feedback on experiment")
         try:
             exp: DSExperiment = prev_out["running"]
             if self.trace.next_incomplete_component() is None or DS_RD_SETTING.coder_on_whole_pipeline:
@@ -176,7 +176,7 @@ class DataScienceRDLoop(RDLoop):
         return feedback
 
     def record(self, prev_out: dict[str, Any]):
-        publish_trace("RECORD", TaskStatus.STARTED, "Recording experimentation results")
+        publish_trace("RECORD", TaskStatus.INPROGRESS, "Recording experimentation results")
         try:
             # set the DAG parent for the trace
             self.trace.sync_dag_parent_and_hist()
