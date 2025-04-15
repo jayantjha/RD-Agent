@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 
 // Import ML Agent components
 import { AgentProgress } from "@/components/ml-agent/AgentProgress"
@@ -129,9 +129,11 @@ export default function MLAgentPage() {
   const [availableLoopCounts, setAvailableLoopCounts] = useState<number[]>([])
   const [sessionId, setSessionId] = useState<string | undefined>(undefined)
   const [threadId, setThreadId] = useState<string | undefined>(undefined)
+  const [skipChat, setSkipChat] = useState<boolean>(false)
 
   // Get the pathname for route handling
   const pathname = usePathname()
+  const queryParams = useSearchParams()
 
   // Auto-scroll to the bottom of messages when new messages are added
   useEffect(() => {
@@ -165,21 +167,17 @@ export default function MLAgentPage() {
       if (urlThreadId) {
         // Set the thread ID from URL
         setThreadId(urlThreadId)
-
-        // Add a system message explaining we're resuming a saved thread
-        setMessages([
-          {
-            role: "agent",
-            content: "Resuming your previous ML workflow. The agent will continue where you left off.",
-            timestamp: new Date(),
-          },
-        ])
-
         // Start the agent with the saved thread ID
         startAgentWithThread(urlThreadId)
       }
     }
   }, [pathname])
+
+  useEffect(() => {
+    if (queryParams && queryParams.get("skipChat")) {
+      setSkipChat(true);
+    }
+  }, [queryParams])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -212,36 +210,37 @@ export default function MLAgentPage() {
       return
     }
 
-    // Add user message to chat
-    const newUserMessage = {
-      role: "user" as const,
-      content: userMessage,
-      timestamp: new Date(),
-    }
-
-    setMessages((prev) => [...prev, newUserMessage])
-    setUserMessage("")
-
-    // If this is about starting an ML task, capture it as the task description
-    if (messages.length === 1) {
-      setTaskDescription(userMessage)
-    }
-    const {thread_id} = await chatStream(userMessage, (data) => { 
-      if (data) {
-        const newMessage = {
-          role: "agent" as const,
-          content: data,
-          timestamp: new Date(),
-        }
-        // data contans message ready to start
-        if (data.includes("ready to start")) {
-          setReadyToStart(true)
-        }
-        setMessages((prev) => [...prev, newMessage])
+    if (!skipChat) {
+      // Add user message to chat
+      const newUserMessage = {
+        role: "user" as const,
+        content: userMessage,
+        timestamp: new Date(),
       }
-    }, chatThreadId, (error) => {})
-    setChatThreadId(thread_id)
-    
+
+      setMessages((prev) => [...prev, newUserMessage])
+      setUserMessage("")
+
+      // If this is about starting an ML task, capture it as the task description
+      if (messages.length === 1) {
+        setTaskDescription(userMessage)
+      }
+      const {thread_id} = await chatStream(userMessage, (data) => { 
+        if (data) {
+          const newMessage = {
+            role: "agent" as const,
+            content: data,
+            timestamp: new Date(),
+          }
+          // data contans message ready to start
+          if (data.includes("ready to start")) {
+            setReadyToStart(true)
+          }
+          setMessages((prev) => [...prev, newMessage])
+        }
+      }, chatThreadId, (error) => {})
+      setChatThreadId(thread_id)
+    }
   }
 
   // Function to simulate a conversation between agent and user
@@ -362,15 +361,16 @@ export default function MLAgentPage() {
   }
 
   // Start simulation when component mounts
-  // useEffect(() => {
-  //   // Start with a slight delay to allow the UI to render
-  //   const timer = setTimeout(() => {
-  //     simulateConversation()
-  //   }, 100)
-  //   // 1000
+  useEffect(() => {
+    // Start with a slight delay to allow the UI to render
+    const timer = setTimeout(() => {
+      if (skipChat)
+        simulateConversation();
+    }, 100)
+    // 1000
 
-  //   return () => clearTimeout(timer)
-  // }, [])
+    return () => clearTimeout(timer)
+  }, [skipChat])
 
   // Update the startAgent function to initialize agent
   const startAgent = () => {

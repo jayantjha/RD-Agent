@@ -54,12 +54,12 @@ async def execute_agent(request: AgentRequest):
 
                 # TO BE HANDLED LATER
 
-                # message = await project_client.agents.create_message(
-                #     thread_id=thread.id,
-                #     role="user",
-                #     content="user_prompt",
-                # )
-                # logger.info(f"Created message, message ID: {message.id}")
+                message = await project_client.agents.create_message(
+                    thread_id=thread.id,
+                    role="agent",
+                    content="Initiating agent...",
+                )
+                logger.info(f"Created message, message ID: {message.id}")
 
                 # run = await project_client.agents.create_and_process_run(thread_id=thread.id, agent_id=agent.id)
                 # logger.info(f"Run finished with status: {run.status}")

@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
 import { startEventStream, stopEventStream } from "@/lib/streamManager"
 import { getApiUrl } from "@/lib/config/index"
+import { useRouter } from 'next/navigation';
 
 interface AgentProgressProps {
   threadId: string,
@@ -54,7 +55,7 @@ export function AgentProgress({
 }: AgentProgressProps) {
   // Maintain a local state for tracking unique loop_count values
   const [loopCounts, setLoopCounts] = useState<Set<number>>(new Set());
-
+  const router = useRouter();
   // Event mappings
   const event_mappings: Record<string, string> = {
     "DS_LOOP": "Starting ML agent for task",
@@ -73,6 +74,10 @@ export function AgentProgress({
     "PIPELINE_TASK": "Running pipeline",
     "RUNNING": "Executing and evaluating model"
   }
+
+  React.useEffect(() => {
+    router.push(`/savedThread/${threadId}`)
+  }, [])
 
   const processAgentActivity = (data: any) => {
     
