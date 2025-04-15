@@ -78,14 +78,14 @@ class DataScienceRDLoop(RDLoop):
         super(RDLoop, self).__init__() 
 
     def direct_exp_gen(self, prev_out: dict[str, Any]):
-        publish_trace("EXPERIMENT_GENERATION", TaskStatus.STARTED, "Experiment generation started")
+        publish_trace("EXPERIMENT_GENERATION", TaskStatus.STARTED, "Analyzing requirements and feedbacks for generating new hypothesis")
         selection = self.ckp_selector.get_selection(self.trace)
         exp = self.exp_gen.gen(self.trace, selection)
         logger.log_object(exp)
 
         # FIXME: this is for LLM debug webapp, remove this when the debugging is done.
         logger.log_object(exp, tag="debug_exp_gen")
-        publish_trace("EXPERIMENT_GENERATION", TaskStatus.COMPLETED, "Experiment generation completed")
+        publish_trace("EXPERIMENT_GENERATION", TaskStatus.COMPLETED, "Hypothesis generated", exp.hypothesis.hypothesis)
         return exp
 
     def coding(self, prev_out: dict[str, Any]):
@@ -134,7 +134,7 @@ class DataScienceRDLoop(RDLoop):
             exp = new_exp
         if DS_RD_SETTING.enable_doc_dev:
             self.docdev.develop(exp)
-        publish_trace("RUNNING", TaskStatus.COMPLETED, "Code execution and evaluation complete")
+        publish_trace("RUNNING", TaskStatus.COMPLETED, "Model execution and evaluation complete")
         return exp
 
     def feedback(self, prev_out: dict[str, Any]) -> ExperimentFeedback:
@@ -155,11 +155,11 @@ class DataScienceRDLoop(RDLoop):
                 decision=True,
             )
         logger.log_object(feedback)
-        publish_trace("FEEDBACK", TaskStatus.COMPLETED, "Generating feedback on experiment")
+        publish_trace("FEEDBACK", TaskStatus.COMPLETED, "Generated feedback on experiment", f"Decision: {feedback.decision}\nReason: {feedback.reason}")
         return feedback
 
     def record(self, prev_out: dict[str, Any]):
-        publish_trace("RECORD", TaskStatus.STARTED, "Recording experiment results")
+        publish_trace("RECORD", TaskStatus.STARTED, "Recording experimentation results")
 
         # set the DAG parent for the trace
         self.trace.sync_dag_parent_and_hist()
