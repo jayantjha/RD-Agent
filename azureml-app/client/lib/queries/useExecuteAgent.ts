@@ -4,6 +4,7 @@ import { config } from '@/lib/config/index';
 interface AgentRequestParams {
   user_prompt: string;
   data_uri: string;
+  chat_thread_id: string;
 }
 
 interface AgentResponse {

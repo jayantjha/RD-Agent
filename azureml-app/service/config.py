@@ -15,7 +15,10 @@ AZURE_STORAGE_CONTAINER_NAME="rd-agent"
 CHAT_START_AGENT_ID="asst_Up7upR2PL5Opev6wNpcfgrTK"
 
 FAKE_THREAD_ID="thread_KosU4pD7ZxvUaXLBWeTE1qoC"
-FAKE_JOB=True
+FAKE_JOB=False
+
+KAGGLE_TOOL_NAME="get_kaggle_competition_name"
+DEFAULT_COMPETITION_ID="playground-series-s4e9"
 
 APP_INSIGHTS_CONNECTION_STRING = (
     "InstrumentationKey=fe75ff06-e2e4-423c-9684-edbf52f1c6ea;"

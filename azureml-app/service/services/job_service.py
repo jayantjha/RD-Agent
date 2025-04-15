@@ -5,16 +5,17 @@ from config import *
 from logger import logger
 
 class JobParameters:
-    def __init__(self, agent_id: str, thread_id: str, user_prompt: str, data_uri: str, project_conn_string: str):
+    def __init__(self, agent_id: str, thread_id: str, user_prompt: str, data_uri: str, project_conn_string: str, competition_id: str):
         self.agent_id = agent_id
         self.thread_id = thread_id
         self.user_prompt = user_prompt
         self.data_uri = data_uri
         self.project_conn_string = project_conn_string
+        self.competition_id = competition_id
 
 def submit_aml_job(job_params: JobParameters):
     try:
-        logger.info(f"Preparing to submit AML job for agent_id: {job_params.agent_id} and thread_id: {job_params.thread_id}")
+        logger.info(f"Preparing to submit AML job for agent_id: {job_params.agent_id} and thread_id: {job_params.thread_id}, competition_id: {job_params.competition_id}")
 
         # credential = ManagedIdentityCredential()
         credential = DefaultAzureCredential()
@@ -31,10 +32,13 @@ def submit_aml_job(job_params: JobParameters):
             "THREAD_ID": job_params.thread_id,  # Add thread_id
             "PROJECT_CONN_STRING": job_params.project_conn_string  # Add project_conn_string
         }
+
+        replaced_command = COMMAND_EXECUTE.replace("playground-series-s4e9", job_params.competition_id)
+
         command_job = command(
             display_name=f"agent-job-{job_params.thread_id}",
             description=f"Job for agent_id: {job_params.agent_id} and thread_id: {job_params.thread_id}",
-            command=COMMAND_EXECUTE,
+            command=replaced_command,
             environment=ENVIRONMENT,
             compute=COMPUTE,
             experiment_name=EXPERIMENT_NAME,
