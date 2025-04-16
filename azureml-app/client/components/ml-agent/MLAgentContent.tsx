@@ -232,7 +232,7 @@ export function MLAgentContent() {
             content: data,
             timestamp: new Date(),
           }
-          // data contans message ready to start
+          // data contains message ready to start
           if (data.includes("ready to start")) {
             setReadyToStart(true)
           }

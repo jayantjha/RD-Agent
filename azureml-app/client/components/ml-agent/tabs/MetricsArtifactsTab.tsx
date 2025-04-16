@@ -1,7 +1,7 @@
 import React, { useMemo } from "react"
 import { BarChart3 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { getAccumulatedMetrics } from "@/lib/utils"
+import { extractMetricKeyFromManifest, getAccumulatedMetrics } from "@/lib/utils"
 
 interface MetricsArtifactsTabProps {
   currentMetricData?: number
@@ -35,6 +35,7 @@ export function MetricsArtifactsTab({
     // Fall back to provided currentMetricData
     // return currentMetricData;
   }, [sessionId, selectedVersion, currentMetricData]);
+  const metric = extractMetricKeyFromManifest(manifestData);
 
   const hasMetrics = metricsData && metricsData.length > 0;
 
@@ -50,7 +51,7 @@ export function MetricsArtifactsTab({
         >
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-medium text-gray-800">Model Performance</h3>
+              <h3 className="text-sm font-medium text-gray-800">{metric}</h3>
               <Badge className="bg-azure-gray text-gray-700 text-xs font-normal">{selectedVersion}</Badge>
             </div>
           </div>

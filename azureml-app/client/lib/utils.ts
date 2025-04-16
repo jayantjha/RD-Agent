@@ -43,6 +43,18 @@ export function extractMetricsFromManifest(manifestData: any): number | null {
   return null;
 }
 
+// Function to extract metrics from manifest data
+export function extractMetricKeyFromManifest(manifestData: any): string | null {
+  if (!manifestData || !manifestData.metrics) return null;
+  
+  // Get the first metric key
+  const metricKeys = Object.keys(manifestData.metrics);
+  if (metricKeys.length === 0) return null;
+  
+  const firstMetricKey = metricKeys[0];
+  return firstMetricKey;
+}
+
 // Function to store metrics in localStorage
 export function storeMetric(sessionId: string, version: string, metricValue: number): void {
   try {
