@@ -64,10 +64,16 @@ async def execute_agent(request: AgentRequest):
 
                 # TO BE HANDLED LATER
 
+                payload = json.dumps({
+                    "task": "INITIATE_AGENT",
+                    "status": "IN_PROGRESS",
+                    "message": ""
+                }) 
+
                 message = await project_client.agents.create_message(
                     thread_id=thread.id,
                     role="assistant",
-                    content="Initiating agent...",
+                    content=payload,
                 )
                 logger.info(f"Created message, message ID: {message.id}")
 

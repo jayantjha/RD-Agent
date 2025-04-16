@@ -58,6 +58,7 @@ export function AgentProgress({
   const router = useRouter();
   // Event mappings
   const event_mappings: Record<string, string> = {
+    "INITIATE_AGENT": "Preparing your environment",
     "DS_LOOP": "Starting ML agent for task",
     "DS_SCENARIO": "Loading and analyzing requirements and datasets",
     "RDLOOP": "Hypothesis generation and coding loop",

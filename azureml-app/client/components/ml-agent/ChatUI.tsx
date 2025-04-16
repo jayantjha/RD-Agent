@@ -65,6 +65,10 @@ export function ChatUI({
     }
   }, [isSuccess, data, handleSendMessage])
 
+  useEffect(() => {
+    console.log("isLoading", isLoading);
+  }, [isLoading])
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
       <div className="w-full max-w-3xl flex flex-col items-center">
