@@ -106,7 +106,15 @@ class DataScienceV2RDLoop(DataScienceRDLoop):
 
     def record(self, prev_out: dict[str, Any]):
         super().record(prev_out)
-
+        
+        try:
+            if len(self.trace.hist) > 0:
+                last_item = self.trace.hist[-1]
+                exp = last_item[1] 
+                self._log(exp)
+        except Exception as e:
+            return
+      
     def _log(self, exp: DSExperiment):
         step_name = self.steps[self.step_idx]
         self._write_experiment_data(exp, step_name)
